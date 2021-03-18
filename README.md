@@ -1,60 +1,79 @@
-# jmespath.js
+# jmespath.cfc
 
-[![Build Status](https://travis-ci.org/jmespath/jmespath.js.png?branch=master)](https://travis-ci.org/jmespath/jmespath.js)
+An implementation of [JMESPath](https://github.com/boto/jmespath) for ColdFusion. This implementation supports searching JSON documents as well as native Ruby data structures.
 
-jmespath is a coldfusion implementation of JMESPath,
-which is a query language for JSON.  It will take a JSON
-document and transform it into another JSON document
-through a JMESPath expression.
-
-Using jmespath.js is really easy.  There's a single function
-you use, `jmespath.search`:
-
-
- [[{key={true}}, {key={[0]}}, {key={{a={b}}}}, {key={0}}, {key={1}}]]
- [[{key={true}}, {key={[0]}}, {key={{a={b}}}}, {key={1}}]]
+## Commandbox Installation
 
 ```
-> var jmespath = require('jmespath');
-> jmespath.search({foo: {bar: {baz: [0, 1, 2, 3, 4]}}}, "foo.bar.baz[2]")
-2
+$ box install jmespath
 ```
 
-In the example we gave the ``search`` function input data of
-`{foo: {bar: {baz: [0, 1, 2, 3, 4]}}}` as well as the JMESPath
-expression `foo.bar.baz[2]`, and the `search` function evaluated
-the expression against the input data to produce the result ``2``.
+## Basic Usage
 
-The JMESPath language can do a lot more than select an element
-from a list.  Here are a few more examples:
+Call `JMESPath.search` with a valid JMESPath search expression and data to search. It will return the extracted values.
 
-```
-> jmespath.search({foo: {bar: {baz: [0, 1, 2, 3, 4]}}}, "foo.bar")
-{ baz: [ 0, 1, 2, 3, 4 ] }
+```javascript
+require 'jmespath'
 
-> jmespath.search({"foo": [{"first": "a", "last": "b"},
-                           {"first": "c", "last": "d"}]},
-                  "foo[*].first")
-[ 'a', 'c' ]
-
-> jmespath.search({"foo": [{"age": 20}, {"age": 25},
-                           {"age": 30}, {"age": 35},
-                           {"age": 40}]},
-                  "foo[?age > `30`]")
-[ { age: 35 }, { age: 40 } ]
+JMESPath.search('foo.bar', { foo: { bar: { baz: "value" }}})
+#=> {baz: "value"}
 ```
 
-## More Resources
+In addition to accessing nested values, you can exact values from arrays.
 
-The example above only show a small amount of what
-a JMESPath expression can do.  If you want to take a
-tour of the language, the *best* place to go is the
-[JMESPath Tutorial](http://jmespath.org/tutorial.html).
+```javascript
+JMESPath.search('foo.bar[0]', { foo: { bar: ["one", "two"] }})
+#=> "one"
 
-One of the best things about JMESPath is that it is
-implemented in many different programming languages including
-python, ruby, php, lua, etc.  To see a complete list of libraries,
-check out the [JMESPath libraries page](http://jmespath.org/libraries.html).
+JMESPath.search('foo.bar[-1]', { foo: { bar: ["one", "two"] }})
+#=> "two"
 
-And finally, the full JMESPath specification can be found
-on the [JMESPath site](http://jmespath.org/specification.html).
+JMESPath.search('foo[*].name', {foo: [{name: "one"}, {name: "two"}]})
+#=> ["one", "two"]
+```
+
+If you search for keys no present in the data, then `nil` is returned.
+
+```javascript
+JMESPath.search('foo.bar', { abc: "mno" })
+#=> null
+```
+
+**[See the JMESPath specification for a full list of supported search expressions.](http://jmespath.org/specification.html)**
+
+## JSON Documents
+
+If you have JSON documents on disk, or IO objects that contain JSON documents, you can pass them as the data argument.
+
+```javascript
+JMESPath.search(expression, expandPath('/path/to/data.json'))
+
+fileContent = fileRead(expandPath("./path/to/data.json"), "utf-8")
+JMESPath.search(expression, fileContent);
+```
+
+## Links of Interest
+
+* [License](http://www.apache.org/licenses/LICENSE-2.0)
+* [JMESPath Tutorial](http://jmespath.org/tutorial.html)
+* [JMESPath Specification](http://jmespath.org/specification.html)
+
+## License
+
+This library is distributed under the apache license, version 2.0
+
+> Copyright 2021 Scott Steinbeck; All rights reserved.
+>
+> Licensed under the apache license, version 2.0 (the "license");
+> You may not use this library except in compliance with the license.
+> You may obtain a copy of the license at:
+>
+> http://www.apache.org/licenses/license-2.0
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the license is distributed on an "as is" basis,
+> without warranties or conditions of any kind, either express or
+> implied.
+>
+> See the license for the specific language governing permissions and
+> limitations under the license.
