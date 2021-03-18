@@ -71,6 +71,7 @@ component displayname="runtime" {
             toList: {_func: this._functiontoList, _signature: [{types: [TYPE_STRING]}, {types: [TYPE_ARRAY_STRING]}]},
             reverse: {_func: this._functionReverse, _signature: [{types: [TYPE_STRING, TYPE_ARRAY]}]},
             'to_array': {_func: this._functionToArray, _signature: [{types: [TYPE_ANY]}]},
+            'to_entries': {_func: this._functionToEntries, _signature: [{types: [TYPE_OBJECT]}]},
             'to_string': {_func: this._functionToString, _signature: [{types: [TYPE_ANY]}]},
             'to_number': {_func: this._functionToNumber, _signature: [{types: [TYPE_ANY]}]},
             'not_null': {_func: this._functionNotNull, _signature: [{types: [TYPE_ANY], variadic: true}]}
@@ -340,6 +341,15 @@ component displayname="runtime" {
         var values = [];
         for (var i = 1; i <= keys.len(); i++) {
             values.append(obj[keys[i]]);
+        }
+        return values;
+    }
+    function _functionToEntries(resolvedArgs) {
+        var obj = resolvedArgs[1];
+        var keys = structKeyArray(obj);
+        var values = [];
+        for (var i = 1; i <= keys.len(); i++) {
+            values.append({ key: keys[i], value:obj[keys[i]]});
         }
         return values;
     }
