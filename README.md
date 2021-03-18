@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/jmespath/jmespath.js.png?branch=master)](https://travis-ci.org/jmespath/jmespath.js)
 
-jmespath is a javascript implementation of JMESPath,
+jmespath is a coldfusion implementation of JMESPath,
 which is a query language for JSON.  It will take a JSON
 document and transform it into another JSON document
 through a JMESPath expression.

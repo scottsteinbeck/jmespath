@@ -251,7 +251,7 @@ component displayname="Parser" {
             this._advance();
         } else {
             var t = this._lookaheadToken(0);
-            dump(t)
+            //dump(t)
             throw( type="JMESError", detail='Expected ' & tokenType & ', got: ' & t.type);
         }
     }

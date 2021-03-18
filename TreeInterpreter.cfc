@@ -343,6 +343,7 @@ component displayname="TreeInterpreter" {
                 for (i = 1; i <= node.children.len(); i++) {
                     resolvedArgs.append(this.visit(node.children[i], value));
                 }
+                if(isNull(this.runtime)) this.runtime = new Runtime();
                 return this.runtime.callFunction(node.name, resolvedArgs);
             case 'ExpressionReference':
                 var refNode = node.children[1];

@@ -1,27 +1,28 @@
 component displayname="runtime" {
 
     // Type constants used to define functions.
+    variables.TOK_EXPREF = "Expref";
     variables.TYPE_NUMBER = 1;
-    variables.TYPE_ANY = 1;
-    variables.TYPE_STRING = 2;
-    variables.TYPE_ARRAY = 3;
-    variables.TYPE_OBJECT = 4;
-    variables.TYPE_BOOLEAN = 5;
-    variables.TYPE_EXPREF = 6;
-    variables.TYPE_NULL = 7;
-    variables.TYPE_ARRAY_NUMBER = 8;
-    variables.TYPE_ARRAY_STRING = 9;
+    variables.TYPE_ANY = 2;
+    variables.TYPE_STRING = 3;
+    variables.TYPE_ARRAY = 4;
+    variables.TYPE_OBJECT = 5;
+    variables.TYPE_BOOLEAN = 6;
+    variables.TYPE_EXPREF = 7;
+    variables.TYPE_NULL = 8;
+    variables.TYPE_ARRAY_NUMBER = 9;
+    variables.TYPE_ARRAY_STRING = 10;
     variables.TYPE_NAME_TABLE = {
-        0: 'number',
-        1: 'any',
-        2: 'string',
-        3: 'array',
-        4: 'object',
-        5: 'boolean',
-        6: 'expression',
-        7: 'null',
-        8: 'Array<number>',
-        9: 'Array<string>'
+        1: 'number',
+        2: 'any',
+        3: 'string',
+        4: 'array',
+        5: 'object',
+        6: 'boolean',
+        7: 'expression',
+        8: 'null',
+        9: 'Array<number>',
+        10: 'Array<string>'
     };
 
     function init() {
@@ -49,6 +50,7 @@ component displayname="runtime" {
             },
             'ends_with': {_func: this._functionEndsWith, _signature: [{types: [TYPE_STRING]}, {types: [TYPE_STRING]}]},
             floor: {_func: this._functionFloor, _signature: [{types: [TYPE_NUMBER]}]},
+            join: {_func: this._functionJoin, _signature: [{types: [TYPE_STRING]},{types: [TYPE_ARRAY]}]},
             length: {_func: this._functionLength, _signature: [{types: [TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]}]},
             map: {_func: this._functionMap, _signature: [{types: [TYPE_EXPREF]}, {types: [TYPE_ARRAY]}]},
             max: {_func: this._functionMax, _signature: [{types: [TYPE_ARRAY_NUMBER, TYPE_ARRAY_STRING]}]},
@@ -75,6 +77,9 @@ component displayname="runtime" {
         };
     }
 
+    
+
+
     function callFunction(name, resolvedArgs) {
         if (!this.functionTable.keyExists(name)) {
             throw (type="JMESError", detail=  'Unknown function: ' &  name &  '()');
@@ -82,7 +87,7 @@ component displayname="runtime" {
             var functionEntry = this.functionTable[name];
         }
         this._validateArgs(name, resolvedArgs, functionEntry._signature);
-        dump({name: functionEntry,args:        resolvedArgs});
+        //dump({name: functionEntry,args:        resolvedArgs});
         return functionEntry._func(resolvedArgs);
     }
     function _validateArgs(name, args, signature) {
@@ -112,11 +117,11 @@ component displayname="runtime" {
         var currentSpec;
         var actualType;
         var typeMatched;
-        for (var i = 1; i < signature.len(); i++) {
+        for (var i = 1; i <= signature.len(); i++) {
             typeMatched = false;
             currentSpec = signature[i].types;
             actualType = this._getTypeName(args[i]);
-            for (var j = 1; j < currentSpec.len(); j++) {
+            for (var j = 1; j <= currentSpec.len(); j++) {
                 if (this._typeMatches(actualType, currentSpec[j], args[i])) {
                     typeMatched = true;
                     break;
@@ -162,7 +167,7 @@ component displayname="runtime" {
                 } else if (expected == TYPE_ARRAY_STRING) {
                     subtype = TYPE_STRING;
                 }
-                for (var i = 1; i < argValue.len(); i++) {
+                for (var i = 1; i <= argValue.len(); i++) {
                     if (!this._typeMatches(this._getTypeName(argValue[i]), subtype, argValue[i])) {
                         return false;
                     }
@@ -173,13 +178,16 @@ component displayname="runtime" {
             return actual == expected;
         }
     }
+
     function _getTypeName(obj) {
+        //echo(serializeJSON(obj) & " -> " & getMetaData(obj).getName() & "<br/>")
         if(isNull(obj)) return TYPE_NULL;
-        if(isBoolean(obj)) return TYPE_BOOLEAN;
-        if(isNumeric(obj)) return TYPE_NUMBER;
-        if(isArray(obj)) return TYPE_ARRAY;
-        if(isStruct(obj)){
-            if (obj.jmespathType == TOK_EXPREF) {
+        if(getMetaData(obj).getName() == 'java.lang.String') return TYPE_STRING;
+        if(getMetaData(obj).getName() == 'java.lang.Boolean') return TYPE_BOOLEAN;
+        if(getMetaData(obj).getName() == 'java.lang.Double') return TYPE_NUMBER;
+        if(getMetaData(obj).getName() == 'lucee.runtime.type.ArrayImpl') return TYPE_ARRAY;
+        if(getMetaData(obj).getName() == 'lucee.runtime.type.StructImpl'){
+            if (structKeyExists(obj,'jmespathType') && obj.jmespathType == TOK_EXPREF) {
                 return TYPE_EXPREF;
             } else {
                 return TYPE_OBJECT;
@@ -189,7 +197,7 @@ component displayname="runtime" {
 
     
     function _functionStartsWith(resolvedArgs) {
-        return resolvedArgs[1].lastIndexOf(resolvedArgs[2]) == 1;
+        return resolvedArgs[1].lastIndexOf(resolvedArgs[2]) == 0;
     }
     function _functionEndsWith(resolvedArgs) {
         var searchStr = resolvedArgs[1];
@@ -200,14 +208,10 @@ component displayname="runtime" {
         var typeName = this._getTypeName(resolvedArgs[1]);
         if (typeName == TYPE_STRING) {
             var originalStr = resolvedArgs[1];
-            var reversedStr = '';
-            for (var i = originalStr.len() - 1; i >= 1; i--) {
-                reversedStr += originalStr[i];
-            }
-            return reversedStr;
+            return reverse(resolvedArgs[1]);
         } else {
-            var reversedArray = resolvedArgs[1].slice(0);
-            reversedArray.reverse();
+            var reversedArray = resolvedArgs[1];
+            reversedArray = reversedArray.reverse();
             return reversedArray;
         }
     }
@@ -218,18 +222,21 @@ component displayname="runtime" {
         return ceiling(resolvedArgs[1]);
     }
     function _functionAvg(resolvedArgs) {
-        var sum = 1;
+        var sum = 0;
         var inputArray = resolvedArgs[1];
-        for (var i = 1; i < inputArray.len(); i++) {
+        for (var i = 1; i <= inputArray.len(); i++) {
             sum += inputArray[i];
         }
         return sum / inputArray.len();
     }
     function _functionContains(resolvedArgs) {
-        return resolvedArgs[1].find(resolvedArgs[2]) >= 2;
+        return resolvedArgs[1].find(resolvedArgs[2]) > 0;
     }
     function _functionFloor(resolvedArgs) {
         return floor(resolvedArgs[1]);
+    }
+    function _functionJoin(resolvedArgs){
+        return arrayToList(resolvedArgs[2],resolvedArgs[1]);
     }
     function _functionLength(resolvedArgs) {
         if (!isStruct(resolvedArgs[1])) {
@@ -237,7 +244,7 @@ component displayname="runtime" {
         } else {
             // As far as I can tell, there's no way to get the length
             // of an object without O(n) iteration through the object.
-            return Object.keys(resolvedArgs[1]).len();
+            return structCount(resolvedArgs[1]);
         }
     }
     function _functionMap(resolvedArgs) {
@@ -245,14 +252,14 @@ component displayname="runtime" {
         var interpreter = this._interpreter;
         var exprefNode = resolvedArgs[1];
         var elements = resolvedArgs[2];
-        for (var i = 1; i < elements.len(); i++) {
+        for (var i = 1; i <= elements.len(); i++) {
             mapped.append(interpreter.visit(exprefNode, elements[i]));
         }
         return mapped;
     }
     function _functionMerge(resolvedArgs) {
         var merged = {};
-        for (var i = 1; i < resolvedArgs.len(); i++) {
+        for (var i = 1; i <= resolvedArgs.len(); i++) {
             var current = resolvedArgs[i];
             for (var key in current) {
                 merged[key] = current[key];
@@ -268,7 +275,7 @@ component displayname="runtime" {
             } else {
                 var elements = resolvedArgs[1];
                 var maxElement = elements[1];
-                for (var i = 2; i < elements.len(); i++) {
+                for (var i = 2; i <= elements.len(); i++) {
                     if (maxElement.find(elements[i]) <= 0) {
                         maxElement = elements[i];
                     }
@@ -287,8 +294,8 @@ component displayname="runtime" {
             } else {
                 var elements = resolvedArgs[1];
                 var minElement = elements[1];
-                for (var i = 2; i < elements.len(); i++) {
-                    if (elements[i].find(minElement) <= 0) {
+                for (var i = 2; i <= elements.len(); i++) {
+                    if (elements[i] < minElement) {
                         minElement = elements[i];
                     }
                 }
@@ -299,9 +306,9 @@ component displayname="runtime" {
         }
     }
     function _functionSum(resolvedArgs) {
-        var sum = 1;
+        var sum = 0;
         var listToSum = resolvedArgs[1];
-        for (var i = 1; i < listToSum.len(); i++) {
+        for (var i = 1; i <= listToSum.len(); i++) {
             sum += listToSum[i];
         }
         return sum;
@@ -325,13 +332,13 @@ component displayname="runtime" {
         }
     }
     function _functionKeys(resolvedArgs) {
-        return Object.keys(resolvedArgs[1]);
+        return structKeyArray(resolvedArgs[1]);
     }
     function _functionValues(resolvedArgs) {
         var obj = resolvedArgs[1];
-        var keys = Object.keys(obj);
+        var keys = structKeyArray(obj);
         var values = [];
-        for (var i = 1; i < keys.len(); i++) {
+        for (var i = 1; i <= keys.len(); i++) {
             values.append(obj[keys[i]]);
         }
         return values;
@@ -361,15 +368,20 @@ component displayname="runtime" {
         if (typeName == TYPE_NUMBER) {
             return resolvedArgs[1];
         } else if (typeName == TYPE_STRING) {
-            convertedValue = +resolvedArgs[1];
-            if (!isNaN(convertedValue)) {
-                return convertedValue;
+            try {
+                convertedValue = ParseNumber(resolvedArgs[1]);
+                if (isNumeric(convertedValue)) {
+                    return convertedValue;
+                }
+            } catch( any e){
+                // throw (type="JMESError", detail= 'ParseError: String "' & resolvedArgs[1] & '" cannot be parsed as number');
+
             }
         }
         return null;
     }
     function _functionNotNull(resolvedArgs) {
-        for (var i = 1; i < resolvedArgs.len(); i++) {
+        for (var i = 1; i <= resolvedArgs.len(); i++) {
             if (this._getTypeName(resolvedArgs[i]) != TYPE_NULL) {
                 return resolvedArgs[i];
             }
@@ -377,12 +389,13 @@ component displayname="runtime" {
         return null;
     }
     function _functionSort(resolvedArgs) {
-        var sortedArray = resolvedArgs[1].slice(0);
-        sortedArray.sort();
+        var sortedArray = resolvedArgs[1];
+        sortedArray.sort('textnocase');
         return sortedArray;
     }
+
     function _functionSortBy(resolvedArgs) {
-        var sortedArray = resolvedArgs[1].slice(0);
+        var sortedArray = resolvedArgs[1];
         if (sortedArray.len() == 0) {
             return sortedArray;
         }
@@ -401,7 +414,7 @@ component displayname="runtime" {
         // After the decorated list has been sorted, it will be
         // undecorated to extract the original elements.
         var decorated = [];
-        for (var i = 1; i < sortedArray.len(); i++) {
+        for (var i = 1; i <= sortedArray.len(); i++) {
             decorated.append([i, sortedArray[i]]);
         }
         decorated.sort(function(a, b) {
@@ -430,7 +443,7 @@ component displayname="runtime" {
             }
         });
         // Undecorate: extract out the original list elements.
-        for (var j = 1; j < decorated.len(); j++) {
+        for (var j = 1; j <= decorated.len(); j++) {
             sortedArray[j] = decorated[j][2];
         }
         return sortedArray;
@@ -439,10 +452,10 @@ component displayname="runtime" {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
         var keyFunction = this.createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
-        var maxNumber = -Infinity;
+        var maxNumber = Javacast('double',1).NEGATIVE_INFINITY;
         var maxRecord;
         var current;
-        for (var i = 1; i < resolvedArray.len(); i++) {
+        for (var i = 1; i <= resolvedArray.len(); i++) {
             current = keyFunction(resolvedArray[i]);
             if (current > maxNumber) {
                 maxNumber = current;
@@ -455,10 +468,10 @@ component displayname="runtime" {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
         var keyFunction = this.createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
-        var minNumber = Infinity;
+        var minNumber = Javacast('double',1).POSITIVE_INFINITY;
         var minRecord;
         var current;
-        for (var i = 1; i < resolvedArray.len(); i++) {
+        for (var i = 1; i <= resolvedArray.len(); i++) {
             current = keyFunction(resolvedArray[i]);
             if (current < minNumber) {
                 minNumber = current;
