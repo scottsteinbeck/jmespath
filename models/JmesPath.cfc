@@ -16,6 +16,7 @@ component {
         // There's likely a clean way to avoid the cyclic dependency.
         var runtime = new Runtime();
         var interpreter = new TreeInterpreter(runtime);
+       // echo("<strong>" & serializeJSON(expression) & "</strong><br/>")
         var node = parser.parse(expression);
         return interpreter.search(node, data);
     }

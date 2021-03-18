@@ -6,7 +6,7 @@ component extends="testbox.system.BaseSpec"{
 /*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		jmespath = new JmesPath();
+		jmespath = new models.JmesPath();
 		tokenize = jmespath.tokenize;
 		compile = jmespath.compile;
 		//strictDeepEqual = jmespath.strictDeepEqual;

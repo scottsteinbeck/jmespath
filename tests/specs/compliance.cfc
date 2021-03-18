@@ -6,7 +6,7 @@ component extends="testbox.system.BaseSpec"{
 /*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		jmespath = new JmesPath();
+		jmespath = new models.JmesPath();
 		tokenize = jmespath.tokenize;
 		compile = jmespath.compile;
 		search = jmespath.search;
@@ -24,7 +24,7 @@ component extends="testbox.system.BaseSpec"{
 	function run(){
 
         listing = directoryList(expandPath("./resources/"), false, "name,query", "*.json", "file" );
-        for (var i = 10; i <= listing.len(); i++) {
+        for (var i = 1; i <= listing.len(); i++) {
             fileContent = fileRead(listing[i], "utf-8");
             filename = getFileFromPath(listing[i]);
             describe("#filename#", function(){

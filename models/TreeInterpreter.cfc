@@ -373,71 +373,46 @@ component displayname="TreeInterpreter" {
         var stop = sliceParams[2];
         var step = sliceParams[3];
         var computed = [null, null, null];
-        if (step == null) {
+        if (step === null) {
             step = 1;
-        } else if (step == 0) {
-            throw(type="JMESError", detail='RuntimeError: Invalid slice, step cannot be 0');
+        } else if (step === 0) {
+            var error = new Error("Invalid slice, step cannot be 0");
+            error.name = "RuntimeError";
+            throw error;
         }
+        var stepValueNegative = step < 0 ? true : false;
 
-        var stepValueNegative = step <=0 ? true : false;
-        
-        if(isNull(start)){
-            start = stepValueNegative ? arrayLength : 1;
+        if (start === null) {
+            start = stepValueNegative ? arrayLength - 1 : 0;
         } else {
-            if(start < 0){
-                start = (arrayLength * ceiling(abs(start)/arrayLength)) + start;
-            } else {
-                start = min(arrayLength,start+1);
-            }
-            start = max(1,start)
-
+            start = capSliceRange(arrayLength, start, step);
         }
 
-        if(isNull(stop)){
-            stop = stepValueNegative ? 1: arrayLength;
+        if (stop === null) {
+            stop = stepValueNegative ? -1 : arrayLength;
         } else {
-            if(stop < 0){
-                stop = (arrayLength * ceiling(abs(stop)/arrayLength))  + stop;             
-            } else {
-                stop = min(arrayLength,stop);
-            }
-            stop = max(1,stop)
+            stop = capSliceRange(arrayLength, stop, step);
         }
-
-
-
-       /* if (start == null) {
-            start = stepValueNegative ? arrayLength : 0;
-        } else {
-            start = this.capSliceRange(arrayLength, start, step);
+        if(start < stop){
+            start+=1;
+        } else if (start > stop){
+            start+=1;
+            stop+=2;
         }
-        if(start < arrayLength) start++;
-        if (stop == null) {
-            stop = stepValueNegative ? 1 : arrayLength;
-        } else {
-            stop = this.capSliceRange(arrayLength, stop, step);
-        }
-        if(stop <= 0) stop = 1;*/
-
         computed[1] = start;
         computed[2] = stop;
         computed[3] = step;
-        dump({
-            len: arrayLength,
-            beg: sliceParams,
-            final: computed
-        })
         return computed;
     }
 
-    function capSliceRange(arrayLength, actualValue, step) {
+    function capSliceRange (arrayLength, actualValue, step) {
         if (actualValue < 0) {
             actualValue += arrayLength;
             if (actualValue < 0) {
-                actualValue = step < 0 ? 0 : 1;
+                actualValue = step < 0 ? -1 : 0;
             }
         } else if (actualValue >= arrayLength) {
-            actualValue = step < 0 ? arrayLength : arrayLength;
+            actualValue = step < 0 ? arrayLength - 1 : arrayLength;
         }
         return actualValue;
     }
