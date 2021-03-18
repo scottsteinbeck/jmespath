@@ -56,9 +56,11 @@ component displayname="TreeInterpreter" {
             return true;
         }
         if (isStruct(first)  && isStruct(second)) {
+            // echo('we are here')
             // An object is equal if it has the same key/value pairs.
             var keysSeen = {};
             for (var key in first) {
+                // echo('first -> ' & key & '<br/>');
                 if (structKeyExists(first, key) && structKeyExists(second,key)) {
                     if (strictDeepEqual(first[key], second[key]) == false) {
                         return false;
@@ -69,10 +71,9 @@ component displayname="TreeInterpreter" {
             // Now check that there aren't any keys in second that weren't
             // in first.
             for (var key2 in second) {
-                if (structKeyExists(second, key2) && structKeyExists(keysSeen,key2)) {
-                    if (keysSeen[key2] != true) {
+                // echo('second -> ' & key2 &  '<br/>');
+                if (!structKeyExists(second, key2) || !structKeyExists(keysSeen,key2)) {
                         return false;
-                    }
                 }
             }
             return true;
@@ -80,15 +81,20 @@ component displayname="TreeInterpreter" {
         return false;
     }
     function isFalse(obj) {
+        //// echo("isFalse check: " & serializeJSON(obj) & " = ");
         // From the spec:
         // A false value corresponds to the following values:
         // Empty list
         // Empty object
         // Empty string
         // False boolean
-        // null value
         // First check the scalar values.
-        if ((isSimpleValue(obj) && obj == '') || isNull(obj) || (isBoolean(obj) && obj == false)) {
+        // null value
+        if(isNull(obj) ) return true;
+        if(isNumeric(obj)) return false;
+        if(isBoolean(obj)) return !obj;
+        
+        if ((isSimpleValue(obj) && obj == '' && obj != 0)) {
             return true;
         } else if (isArray(obj) && obj.len() == 0) {
             // Check for an empty array.
@@ -100,11 +106,14 @@ component displayname="TreeInterpreter" {
                 // the object is not empty so the object
                 // is not false.
                 if (obj.keyExists(key)) {
+                    // echo("true<br/>");
                     return false;
                 }
             }
+            // echo("true<br/>");
             return true;
         } else {
+             // echo("false<br/>");
             return false;
         }
     }
@@ -134,7 +143,7 @@ component displayname="TreeInterpreter" {
         return this.visit(node, value);
     }
     function visit(node, value) {
-        //echo(serializeJSON(node) & "[ " & node.type & " ] " & serializeJSON(value) & "<br/>");
+        // echo(serializeJSON(node) & "[ " & node.type & " ] " & serializeJSON(value) & "<br/>");
         var  matched;
         var  current;
         var  result;
@@ -149,12 +158,15 @@ component displayname="TreeInterpreter" {
             case 'Field':
                 if (!isNull(value) && isStruct(value)) {
                     if (!value.keyExists(node.name)) {
+                        // echo(" = structNull" & "<br/>")
                         return null;
                     } else {
                         field = value[node.name];
+                        // echo(" = " & serializeJSON(field) & "<br/>")
                         return field;
                     }
                 }
+                // echo(" = Null" & "<br/>")
                 return null;
             case 'Subexpression':
                 result = this.visit(node.children[1], value);

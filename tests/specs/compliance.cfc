@@ -44,7 +44,7 @@ component extends="testbox.system.BaseSpec"{
                                 //    expect(function() {search(given, testcase.expression) }).toThrow();
                                 //});
                             } else {
-                                it( title= 'should pass test ' & j & " expression: " & testcase.expression & " with result -> " & serializeJSON(testcase.result), 
+                                it( title= ( testcase.comment ?: '') & ' should pass test ' & j & " expression: " & testcase.expression & " with result -> " & serializeJSON(testcase.result), 
                                     data = { testcase = testcase },
                                     body = function(data) {
                                         var testcase = data.testcase;

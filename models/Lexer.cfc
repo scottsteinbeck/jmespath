@@ -52,7 +52,7 @@ component displayname="Lexer" {
         '=': true,
         '!': true
     };
-    variables.skipChars = {' ': true, '\t': true, '\n': true};
+    variables.skipChars = {' ': true, '#chr(13)#': true, '#chr(10)#': true};
 
     function isAlpha(ch) {
         return (ch >= 'a' && ch <= 'z') ||
@@ -128,7 +128,7 @@ component displayname="Lexer" {
                     tokens.append({type: TOK_PIPE, value: '|', start: start});
                 }
             } else {
-                throw( message= 'Unknown character', type="JMESError", detail= 'Unknown character:' & stream[this._current]);
+                throw( message= 'Unknown character', type="JMESError", detail= 'Unknown character:(' & asc(stream[this._current]) & ')');
             }
         }
 
@@ -341,14 +341,14 @@ component displayname="Lexer" {
         try {
             value = deserializeJSON(token);
         } catch (any e) {
-            echo(token & " -> Error: " & e.message & "<br/>");
-            return token;
-            //try {
-            //    value = deserializeJSON('"' & token & '"');
-            //} catch (any f) {
-            //    echo(token & " -> Error: " & f.message & "<br/>");
-            //   return token;
-            //}
+            //echo(token & " -> Error: " & e.message & "<br/>");
+            //return token;
+            try {
+                value = deserializeJSON('"' & token & '"');
+            } catch (any f) {
+                //echo(token & " -> Error: " & f.message & "<br/>");
+               return token;
+            }
         }
         return value
     }
