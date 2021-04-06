@@ -1,6 +1,6 @@
 # jmespath.cfc
 
-An implementation of [JMESPath](https://github.com/boto/jmespath) for ColdFusion. This implementation supports searching JSON documents as well as native Ruby data structures.
+An implementation of [JMESPath](https://github.com/boto/jmespath) for ColdFusion. This implementation supports searching JSON documents as well as native Coldfusion structs and arrays.
 
 ## Commandbox Installation
 
