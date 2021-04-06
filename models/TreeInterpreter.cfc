@@ -355,8 +355,8 @@ component displayname="TreeInterpreter" {
                 for (i = 1; i <= node.children.len(); i++) {
                     resolvedArgs.append(this.visit(node.children[i], value));
                 }
-                if(isNull(this.runtime)) this.runtime = new Runtime();
-                return this.runtime.callFunction(node.name, resolvedArgs);
+                if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
+                return APPLICATION.jmesPathRuntime.callFunction(node.name, resolvedArgs);
             case 'ExpressionReference':
                 var refNode = node.children[1];
                 // Tag the node with a specific attribute so the type
@@ -376,9 +376,7 @@ component displayname="TreeInterpreter" {
         if (step === nullvalue()) {
             step = 1;
         } else if (step === 0) {
-            var error = new Error("Invalid slice, step cannot be 0");
-            error.name = "RuntimeError";
-            throw error;
+            throw(type="RuntimeError", detail='Invalid slice, step cannot be 0');
         }
         var stepValueNegative = step < 0 ? true : false;
 

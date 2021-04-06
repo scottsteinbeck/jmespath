@@ -26,7 +26,9 @@ component displayname="runtime" {
     };
 
     function init() {
-        this._interpreter = new TreeInterpreter();
+        if(!APPLICATION.keyExists("jmesPathTreeInterpreter"))  APPLICATION.jmesPathTreeInterpreter = new TreeInterpreter();
+        this._interpreter = APPLICATION.jmesPathTreeInterpreter;
+
         this.functionTable = {
             // name: [function, <signature>]
             // The <signature> can be:

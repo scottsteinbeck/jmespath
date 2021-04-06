@@ -1,24 +1,22 @@
 component {
 
     function compile(stream) {
-        var parser = new Parser();
-        var ast = parser.parse(stream);
+        if(!APPLICATION.keyExists("jmespathparser")){
+            APPLICATION.jmesPathParser = new Parser();
+        }
+        var ast = APPLICATION.jmesPathParser.parse(stream);
         return ast;
     }
     function tokenize(stream) {
-        var lexer = new Lexer();
-        return lexer.tokenize(stream);
+        if(!APPLICATION.keyExists("jmesPathLexer"))  APPLICATION.jmesPathLexer= new Lexer();
+        return APPLICATION.jmesPathLexer.tokenize(stream);
     }
     function search(data, expression) {
-        variables.parser = new Parser();
-        // This needs to be improved.  Both the interpreter and runtime depend on
-        // each other.  The runtime needs the interpreter to support exprefs.
-        // There's likely a clean way to avoid the cyclic dependency.
-        var runtime = new Runtime();
-        var interpreter = new TreeInterpreter(runtime);
-       // echo("<strong>" & serializeJSON(expression) & "</strong><br/>")
-        var node = parser.parse(expression);
-        return interpreter.search(node, data);
+        if(!APPLICATION.keyExists("jmesPathParser"))  APPLICATION.jmesPathParser = new Parser();
+        if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
+        if(!APPLICATION.keyExists("jmesPathTreeInterpreter"))  APPLICATION.jmesPathTreeInterpreter = new TreeInterpreter(APPLICATION.jmesPathRuntime);
+        var node = APPLICATION.jmesPathParser.parse(expression);
+        return APPLICATION.jmesPathTreeInterpreter.search(node, data);
     }
 
 }

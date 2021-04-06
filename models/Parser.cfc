@@ -66,13 +66,13 @@ component displayname="Parser" {
         var ast = this.expression(0);
         if (this._lookahead(0) != TOK_EOF) {
             var t = this._lookaheadToken(0);
-             throw( message= 'Unexpected token type', type="JMESError", detail= 'Unexpected token type: ' & t.type & ', value: ' & t.value);
+            throw( message= 'Unexpected token type', type="JMESError", detail= 'Unexpected token type: ' & t.type & ', value: ' & t.value);
         }
         return ast;
     }
     function _loadTokens(expression) {
-        var lexer = new Lexer();
-        var tokens = lexer.tokenize(expression);
+        if(!APPLICATION.keyExists("jmesPathLexer"))  APPLICATION.jmesPathLexer = new Lexer();
+        var tokens = APPLICATION.jmesPathLexer.tokenize(expression);
         tokens.append({type: TOK_EOF, value: '', start: expression.len()});
         this.tokens = tokens;
     }
