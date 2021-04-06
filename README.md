@@ -114,7 +114,7 @@ sort, sort_by, max_by, min_by, reverse;
 #### Conversion functions
 
 ```javascript
-to_array, to_string, to_number;
+to_array, to_string, to_number, to_entries;
 ```
 
 **[See the JMESPath specification for a full list of supported search expressions.](http://jmespath.org/specification.html)**
