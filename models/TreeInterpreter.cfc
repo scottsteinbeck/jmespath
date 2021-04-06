@@ -159,7 +159,7 @@ component displayname="TreeInterpreter" {
                 if (!isNull(value) && isStruct(value)) {
                     if (!value.keyExists(node.name)) {
                         // echo(" = structNull" & "<br/>")
-                        return null;
+                        return nullvalue();
                     } else {
                         field = value[node.name];
                         // echo(" = " & serializeJSON(field) & "<br/>")
@@ -167,13 +167,13 @@ component displayname="TreeInterpreter" {
                     }
                 }
                 // echo(" = Null" & "<br/>")
-                return null;
+                return nullvalue();
             case 'Subexpression':
                 result = this.visit(node.children[1], value);
                 for (i = 2; i <= node.children.len(); i++) {
                     result = this.visit(node.children[2], result);
                     if (isNull(result)) {
-                        return null;
+                        return nullvalue();
                     }
                 }
                 return result;
@@ -183,7 +183,7 @@ component displayname="TreeInterpreter" {
                 return right;
             case 'Index':
                 if (!isArray(value)) {
-                    return null;
+                    return nullvalue();
                 }
                 var index = node.value;
                 if (index < 0) {
@@ -192,13 +192,13 @@ component displayname="TreeInterpreter" {
                     index++; // to account for coldfusion starting at 1
                 }
                 if (!value.indexExists(index)) {
-                    return null;
+                    return nullvalue();
                 }
                 result = value[index];
                 return result;
             case 'Slice':
                 if (!isArray(value)) {
-                    return null;
+                    return nullvalue();
                 }
                 var sliceParams = (node.children);
                 var computed = this.computeSliceParams(value.len(), sliceParams);
@@ -220,7 +220,7 @@ component displayname="TreeInterpreter" {
                 // Evaluate left child.
                 var base = this.visit(node.children[1], value);
                 if (!isArray(base)) {
-                    return null;
+                    return nullvalue();
                 }
                 collected = [];
                 for (i = 1; i <= base.len(); i++) {
@@ -234,7 +234,7 @@ component displayname="TreeInterpreter" {
                 // Evaluate left child.
                 base = this.visit(node.children[1], value);
                 if (!isStruct(base)) {
-                    return null;
+                    return nullvalue();
                 }
                 collected = [];
                 var values = objValues(base);
@@ -248,7 +248,7 @@ component displayname="TreeInterpreter" {
             case 'FilterProjection':
                 base = this.visit(node.children[1], value);
                 if (!isArray(base)) {
-                    return null;
+                    return nullvalue();
                 }
                 var filtered = [];
                 var finalResults = [];
@@ -294,7 +294,7 @@ component displayname="TreeInterpreter" {
             case TOK_FLATTEN:
                 var original = this.visit(node.children[1], value);
                 if (!isArray(original)) {
-                    return null;
+                    return nullvalue();
                 }
                 var merged = [];
                 for (i = 1; i <= original.len(); i++) {
@@ -310,7 +310,7 @@ component displayname="TreeInterpreter" {
                 return value;
             case 'MultiSelectList':
                 if (isNull(value)) {
-                    return null;
+                    return nullvalue();
                 }
                 collected = [];
                 for (i = 1; i <= node.children.len(); i++) {
@@ -319,7 +319,7 @@ component displayname="TreeInterpreter" {
                 return collected;
             case 'MultiSelectHash':
                 if (isNull(value)) {
-                    return null;
+                    return nullvalue();
                 }
                 collected = {};
                 var child;
@@ -372,8 +372,8 @@ component displayname="TreeInterpreter" {
         var start = sliceParams[1];
         var stop = sliceParams[2];
         var step = sliceParams[3];
-        var computed = [null, null, null];
-        if (step === null) {
+        var computed = [nullvalue(), nullvalue(), nullvalue()];
+        if (step === nullvalue()) {
             step = 1;
         } else if (step === 0) {
             var error = new Error("Invalid slice, step cannot be 0");
@@ -382,13 +382,13 @@ component displayname="TreeInterpreter" {
         }
         var stepValueNegative = step < 0 ? true : false;
 
-        if (start === null) {
+        if (start === nullvalue()) {
             start = stepValueNegative ? arrayLength - 1 : 0;
         } else {
             start = capSliceRange(arrayLength, start, step);
         }
 
-        if (stop === null) {
+        if (stop === nullvalue()) {
             stop = stepValueNegative ? -1 : arrayLength;
         } else {
             stop = capSliceRange(arrayLength, stop, step);

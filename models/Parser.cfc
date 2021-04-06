@@ -117,7 +117,7 @@ component displayname="Parser" {
                 return {type: 'NotExpression', children: [right]};
             case TOK_STAR:
                 left = {type: 'Identity'};
-                right = null;
+                right = nullvalue();
                 if (this._lookahead(0) == TOK_RBRACKET) {
                     // This can happen in a multiselect,
                     // [a, b, *]
@@ -279,7 +279,7 @@ component displayname="Parser" {
     function _parseSliceExpression() {
         // [start:end:step] where each part is optional, as well as the last
         // colon.
-        var parts = [null, null, null];
+        var parts = [nullvalue(), nullvalue(), nullvalue()];
         var index = 1;
         var currentToken = this._lookahead(0);
         while (currentToken != TOK_RBRACKET && index <= 3) {

@@ -284,7 +284,7 @@ component displayname="runtime" {
                 return maxElement;
             }
         } else {
-            return null;
+            return nullvalue();
         }
     }
     function _functionMin(resolvedArgs) {
@@ -303,7 +303,7 @@ component displayname="runtime" {
                 return minElement;
             }
         } else {
-            return null;
+            return nullvalue();
         }
     }
     function _functionSum(resolvedArgs) {
@@ -388,7 +388,7 @@ component displayname="runtime" {
 
             }
         }
-        return null;
+        return nullvalue();
     }
     function _functionNotNull(resolvedArgs) {
         for (var i = 1; i <= resolvedArgs.len(); i++) {
@@ -396,7 +396,7 @@ component displayname="runtime" {
                 return resolvedArgs[i];
             }
         }
-        return null;
+        return nullvalue();
     }
     function _functionSort(resolvedArgs) {
         var sortedArray = resolvedArgs[1];
