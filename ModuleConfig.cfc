@@ -9,7 +9,6 @@ component {
     this.dependencies = [];
 
     function configure() {
-        binder.map('_').to('#moduleMapping#.jmespath');
         binder.map('jmespath').to('#moduleMapping#.jmespath');
     }
 
