@@ -1,6 +1,8 @@
 component {
 
+    this.name = 'JMESPath';
     this.title = 'JMESPath';
+    this.slug = 'JMESPath';
     this.author = 'Scott Steinbeck';
     this.webURL = 'https://github.com/scottsteinbeck/jmespath';
     this.description = 'An JMESPath port for Coldfusion. A query language for JSON.';
