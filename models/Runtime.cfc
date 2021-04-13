@@ -128,11 +128,12 @@ component displayname="runtime" {
         var actualType;
         var typeMatched;
         for (var i = 1; i <= signature.len(); i++) {
-            typeMatched = false;
-            currentSpec = signature[i].types;
-            actualType = _getTypeName(args[i]);
+            var typeMatched = false;
+            var currentSpec = signature[i].types;
+            var item = isNull(args[i]) ? NullValue() : args[i];
+            var actualType = isNull(item) ? TYPE_NULL : _getTypeName(item);
             for (var j = 1; j <= currentSpec.len(); j++) {
-                if (_typeMatches(actualType, currentSpec[j], args[i])) {
+                if (_typeMatches(actualType, currentSpec[j], item ?: NullValue())) {
                     typeMatched = true;
                     break;
                 }
@@ -273,7 +274,7 @@ component displayname="runtime" {
         var exprefNode = resolvedArgs[1];
         var elements = resolvedArgs[2];
         for (var i = 1; i <= elements.len(); i++) {
-            mapped.append(application.interpreter.visit(exprefNode, elements[i]));
+            mapped.append(application.jmesPathTreeInterpreter.visit(exprefNode, elements[i]));
         }
         return mapped;
     }
@@ -303,7 +304,7 @@ component displayname="runtime" {
                 return maxElement;
             }
         } else {
-            return nullValue();
+            return;
         }
     }
     function _functionMin(resolvedArgs) {
@@ -322,7 +323,7 @@ component displayname="runtime" {
                 return minElement;
             }
         } else {
-            return nullValue();
+            return;
         }
     }
     function _functionSum(resolvedArgs) {
@@ -402,20 +403,19 @@ component displayname="runtime" {
                 if (isNumeric(convertedValue)) {
                     return convertedValue;
                 }
-            } catch( any e){
-                throw (type="JMESError", message= 'ParseError: String "' & resolvedArgs[1] & '" cannot be parsed as number');
+            } catch( expression e){
 
             }
         }
-        return nullValue();
+        return;
     }
     function _functionNotNull(resolvedArgs) {
         for (var i = 1; i <= resolvedArgs.len(); i++) {
-            if (_getTypeName(resolvedArgs[i]) != TYPE_NULL) {
+            if (_getTypeName(resolvedArgs[i] ?: NullValue()) != TYPE_NULL) {
                 return resolvedArgs[i];
             }
         }
-        return nullValue();
+        return;
     }
     function _functionSort(resolvedArgs) {
         var sortedArray = resolvedArgs[1];
@@ -429,7 +429,7 @@ component displayname="runtime" {
             return sortedArray;
         }
         var exprefNode = resolvedArgs[2];
-        var requiredType = _getTypeName(application.interpreter.visit(exprefNode, sortedArray[1]));
+        var requiredType = _getTypeName(application.jmesPathTreeInterpreter.visit(exprefNode, sortedArray[1]));
         if ([TYPE_NUMBER, TYPE_STRING].indexOf(requiredType) < 0) {
             throw (type="JMESError", message= 'TypeError');
         }
@@ -446,8 +446,8 @@ component displayname="runtime" {
             decorated.append([i, sortedArray[i]]);
         }
         decorated.sort(function(a, b) {
-            var exprA = application.interpreter.visit(exprefNode, a[2]);
-            var exprB = application.interpreter.visit(exprefNode, b[2]);
+            var exprA = application.jmesPathTreeInterpreter.visit(exprefNode, a[2]);
+            var exprB = application.jmesPathTreeInterpreter.visit(exprefNode, b[2]);
             if (that._getTypeName(exprA) != requiredType) {
                 throw (type="JMESError", message=
                     'TypeError: expected ' &  requiredType &  ', received ' &
@@ -479,7 +479,7 @@ component displayname="runtime" {
     function _functionMaxBy(resolvedArgs) {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
-        var keyFunction = .createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
+        var keyFunction = createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
         var maxNumber = Javacast('double',1).NEGATIVE_INFINITY;
         var maxRecord;
         var current;
@@ -495,7 +495,7 @@ component displayname="runtime" {
     function _functionMinBy(resolvedArgs) {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
-        var keyFunction = .createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
+        var keyFunction = createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
         var minNumber = Javacast('double',1).POSITIVE_INFINITY;
         var minRecord;
         var current;
@@ -510,7 +510,7 @@ component displayname="runtime" {
     }
     function createKeyFunction(exprefNode, allowedTypes) {
         var keyFunc = function(x) {
-            var current = application.interpreter.visit(exprefNode, x);
+            var current = application.jmesPathTreeInterpreter.visit(exprefNode, x);
             if (allowedTypes.indexOf(_getTypeName(current)) < 0) {
                 var msg = 'TypeError: expected one of ' &  allowedTypes &
                 ', received ' &  _getTypeName(current);

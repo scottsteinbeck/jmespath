@@ -44,11 +44,11 @@ component extends="testbox.system.BaseSpec"{
                                 //    expect(function() {search(given, testcase.expression) }).toThrow();
                                 //});
                             } else {
-                                it( title= ( testcase.comment ?: '') & ' should pass test ' & j & " expression: " & testcase.expression & " with result -> " & (isNull(testcase.result) ? '' : serializeJSON(testcase.result)), 
+                                it( title= ( testcase.comment ?: '') & ' should pass test ' & j & " expression: " & testcase.expression & " with result -> " & (isNull(testcase.result) ? 'NULL' : serializeJSON(testcase.result)), 
                                     data = { testcase = testcase },
                                     body = function(data) {
                                         var testcase = data.testcase;
-                                        expect(search(given, testcase.expression)).toBe(testcase.result);
+                                        expect(search(given, testcase.expression)).toBe(testcase.result ?: NullValue());
                                     }
                                 );
                             }

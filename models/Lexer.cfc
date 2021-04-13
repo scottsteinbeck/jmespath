@@ -344,7 +344,7 @@ component displayname="Lexer" {
                 return token;
             }
         }
-        return value
+        return value ?: NullValue(); 
     }
 
 }
