@@ -35,5 +35,6 @@
     "installPaths":{
         "testbox":"testbox/"
     },
-    "type":"modules"
+    "type":"modules",
+    "dependencies":{}
 }

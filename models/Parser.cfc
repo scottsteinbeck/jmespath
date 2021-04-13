@@ -1,63 +1,63 @@
 component displayname="Parser" {
 
-    variables.TOK_EOF = 'EOF';
-    variables.TOK_UNQUOTEDIDENTIFIER = 'UnquotedIdentifier';
-    variables.TOK_QUOTEDIDENTIFIER = 'QuotedIdentifier';
-    variables.TOK_RBRACKET = 'Rbracket';
-    variables.TOK_RPAREN = 'Rparen';
-    variables.TOK_COMMA = 'Comma';
-    variables.TOK_COLON = 'Colon';
-    variables.TOK_RBRACE = 'Rbrace';
-    variables.TOK_NUMBER = 'Number';
-    variables.TOK_CURRENT = 'Current';
-    variables.TOK_EXPREF = 'Expref';
-    variables.TOK_PIPE = 'Pipe';
-    variables.TOK_OR = 'Or';
-    variables.TOK_AND = 'And';
-    variables.TOK_EQ = 'EQ';
-    variables.TOK_GT = 'GT';
-    variables.TOK_LT = 'LT';
-    variables.TOK_GTE = 'GTE';
-    variables.TOK_LTE = 'LTE';
-    variables.TOK_NE = 'NE';
-    variables.TOK_FLATTEN = 'Flatten';
-    variables.TOK_STAR = 'Star';
-    variables.TOK_FILTER = 'Filter';
-    variables.TOK_DOT = 'Dot';
-    variables.TOK_NOT = 'Not';
-    variables.TOK_LBRACE = 'Lbrace';
-    variables.TOK_LBRACKET = 'Lbracket';
-    variables.TOK_LPAREN = 'Lparen';
-    variables.TOK_LITERAL = 'Literal';
+    TOK_EOF = 'EOF';
+    TOK_UNQUOTEDIDENTIFIER = 'UnquotedIdentifier';
+    TOK_QUOTEDIDENTIFIER = 'QuotedIdentifier';
+    TOK_RBRACKET = 'Rbracket';
+    TOK_RPAREN = 'Rparen';
+    TOK_COMMA = 'Comma';
+    TOK_COLON = 'Colon';
+    TOK_RBRACE = 'Rbrace';
+    TOK_NUMBER = 'Number';
+    TOK_CURRENT = 'Current';
+    TOK_EXPREF = 'Expref';
+    TOK_PIPE = 'Pipe';
+    TOK_OR = 'Or';
+    TOK_AND = 'And';
+    TOK_EQ = 'EQ';
+    TOK_GT = 'GT';
+    TOK_LT = 'LT';
+    TOK_GTE = 'GTE';
+    TOK_LTE = 'LTE';
+    TOK_NE = 'NE';
+    TOK_FLATTEN = 'Flatten';
+    TOK_STAR = 'Star';
+    TOK_FILTER = 'Filter';
+    TOK_DOT = 'Dot';
+    TOK_NOT = 'Not';
+    TOK_LBRACE = 'Lbrace';
+    TOK_LBRACKET = 'Lbracket';
+    TOK_LPAREN = 'Lparen';
+    TOK_LITERAL = 'Literal';
 
-    variables.bindingPower = {};
-    variables.bindingPower[TOK_EOF] = 0;
-    variables.bindingPower[TOK_UNQUOTEDIDENTIFIER] = 0;
-    variables.bindingPower[TOK_QUOTEDIDENTIFIER] = 0;
-    variables.bindingPower[TOK_RBRACKET] = 0;
-    variables.bindingPower[TOK_RPAREN] = 0;
-    variables.bindingPower[TOK_COMMA] = 0;
-    variables.bindingPower[TOK_RBRACE] = 0;
-    variables.bindingPower[TOK_NUMBER] = 0;
-    variables.bindingPower[TOK_CURRENT] = 0;
-    variables.bindingPower[TOK_EXPREF] = 0;
-    variables.bindingPower[TOK_PIPE] = 1;
-    variables.bindingPower[TOK_OR] = 2;
-    variables.bindingPower[TOK_AND] = 3;
-    variables.bindingPower[TOK_EQ] = 5;
-    variables.bindingPower[TOK_GT] = 5;
-    variables.bindingPower[TOK_LT] = 5;
-    variables.bindingPower[TOK_GTE] = 5;
-    variables.bindingPower[TOK_LTE] = 5;
-    variables.bindingPower[TOK_NE] = 5;
-    variables.bindingPower[TOK_FLATTEN] = 9;
-    variables.bindingPower[TOK_STAR] = 20;
-    variables.bindingPower[TOK_FILTER] = 21;
-    variables.bindingPower[TOK_DOT] = 40;
-    variables.bindingPower[TOK_NOT] = 45;
-    variables.bindingPower[TOK_LBRACE] = 50;
-    variables.bindingPower[TOK_LBRACKET] = 55;
-    variables.bindingPower[TOK_LPAREN] = 60;
+    bindingPower = {};
+    bindingPower[TOK_EOF] = 0;
+    bindingPower[TOK_UNQUOTEDIDENTIFIER] = 0;
+    bindingPower[TOK_QUOTEDIDENTIFIER] = 0;
+    bindingPower[TOK_RBRACKET] = 0;
+    bindingPower[TOK_RPAREN] = 0;
+    bindingPower[TOK_COMMA] = 0;
+    bindingPower[TOK_RBRACE] = 0;
+    bindingPower[TOK_NUMBER] = 0;
+    bindingPower[TOK_CURRENT] = 0;
+    bindingPower[TOK_EXPREF] = 0;
+    bindingPower[TOK_PIPE] = 1;
+    bindingPower[TOK_OR] = 2;
+    bindingPower[TOK_AND] = 3;
+    bindingPower[TOK_EQ] = 5;
+    bindingPower[TOK_GT] = 5;
+    bindingPower[TOK_LT] = 5;
+    bindingPower[TOK_GTE] = 5;
+    bindingPower[TOK_LTE] = 5;
+    bindingPower[TOK_NE] = 5;
+    bindingPower[TOK_FLATTEN] = 9;
+    bindingPower[TOK_STAR] = 20;
+    bindingPower[TOK_FILTER] = 21;
+    bindingPower[TOK_DOT] = 40;
+    bindingPower[TOK_NOT] = 45;
+    bindingPower[TOK_LBRACE] = 50;
+    bindingPower[TOK_LBRACKET] = 55;
+    bindingPower[TOK_LPAREN] = 60;
 
 
     function parse(expression) {
@@ -70,12 +70,14 @@ component displayname="Parser" {
         }
         return ast;
     }
+
     function _loadTokens(expression) {
         if(!APPLICATION.keyExists("jmesPathLexer"))  APPLICATION.jmesPathLexer = new Lexer();
         var tokens = APPLICATION.jmesPathLexer.tokenize(expression);
         tokens.append({type: TOK_EOF, value: '', start: expression.len()});
         this.tokens = tokens;
     }
+
     function expression(rbp) {
         var leftToken = this._lookaheadToken(0);
         this._advance();
@@ -88,15 +90,19 @@ component displayname="Parser" {
         }
         return left;
     }
+
     function _lookahead(number) {
         return this.tokens[this.index + number].type;
     }
+
     function _lookaheadToken(number) {
         return this.tokens[this.index + number];
     }
+
     function _advance() {
         this.index++;
     }
+
     function nud(token) {
         var left;
         var right;
@@ -109,7 +115,7 @@ component displayname="Parser" {
             case TOK_QUOTEDIDENTIFIER:
                 var node = {type: 'Field', name: token.value};
                 if (this._lookahead(0) == TOK_LPAREN) {
-                    throw( type="JMESError", detail='Quoted identifier not allowed for function names.');
+                    throw( type="JMESError", message='Quoted identifier not allowed for function names.');
                 }
                 return node;
             case TOK_NOT:
@@ -252,11 +258,11 @@ component displayname="Parser" {
         } else {
             var t = this._lookaheadToken(0);
             //dump(t)
-            throw( type="JMESError", detail='Expected ' & tokenType & ', got: ' & t.type);
+            throw( type="JMESError", message='Expected ' & tokenType & ', got: ' & t.type);
         }
     }
     function _errorToken(token) {
-         throw( type="JMESError", detail= 'Invalid token (' & token.type & '): "' & token.value & '"' );
+        throw( type="JMESError", message= 'Invalid token (' & token.type & '): "' & token.value & '"' );
     }
     function _parseIndexExpression() {
         if (this._lookahead(0) == TOK_COLON || this._lookahead(1) == TOK_COLON) {
@@ -291,7 +297,7 @@ component displayname="Parser" {
                 this._advance();
             } else {
                 var t = this._lookahead(0);
-                throw( type="JMESError", detail= 'Parser Error: Syntax error, unexpected token: ' &  t.value & '(' & t.type & ')');
+                throw( type="JMESError", message= 'Parser Error: Syntax error, unexpected token: ' &  t.value & '(' & t.type & ')');
             }
             currentToken = this._lookahead(0);
         }
@@ -328,7 +334,7 @@ component displayname="Parser" {
             right = this._parseDotRHS(rbp);
         } else {
             var t = this._lookaheadToken(0);
-            throw(type="JMESError", detail= 'ParserError: Sytanx error, unexpected token: ' & t.value & '(' & t.type & ')' );
+            throw(type="JMESError", message= 'ParserError: Sytanx error, unexpected token: ' & t.value & '(' & t.type & ')' );
         }
         return right;
     }
@@ -340,7 +346,7 @@ component displayname="Parser" {
             if (this._lookahead(0) == TOK_COMMA) {
                 this._match(TOK_COMMA);
                 if (this._lookahead(0) == TOK_RBRACKET) {
-                    throw(type="JMESError", detail= 'Unexpected token Rbracket');
+                    throw(type="JMESError", message= 'Unexpected token Rbracket');
                 }
             }
         }
@@ -357,7 +363,7 @@ component displayname="Parser" {
         for (; ;) {
             keyToken = this._lookaheadToken(0);
             if (identifierTypes.indexOf(keyToken.type) < 0) {
-                throw(type="JMESError", detail= 'Expecting an identifier token, got: ' & keyToken.type);
+                throw(type="JMESError", message= 'Expecting an identifier token, got: ' & keyToken.type);
             }
             keyName = keyToken.value;
             this._advance();

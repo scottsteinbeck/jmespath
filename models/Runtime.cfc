@@ -1,18 +1,18 @@
 component displayname="runtime" {
 
     // Type constants used to define functions.
-    variables.TOK_EXPREF = "Expref";
-    variables.TYPE_NUMBER = 1;
-    variables.TYPE_ANY = 2;
-    variables.TYPE_STRING = 3;
-    variables.TYPE_ARRAY = 4;
-    variables.TYPE_OBJECT = 5;
-    variables.TYPE_BOOLEAN = 6;
-    variables.TYPE_EXPREF = 7;
-    variables.TYPE_NULL = 8;
-    variables.TYPE_ARRAY_NUMBER = 9;
-    variables.TYPE_ARRAY_STRING = 10;
-    variables.TYPE_NAME_TABLE = {
+    TOK_EXPREF = "Expref";
+    TYPE_NUMBER = 1;
+    TYPE_ANY = 2;
+    TYPE_STRING = 3;
+    TYPE_ARRAY = 4;
+    TYPE_OBJECT = 5;
+    TYPE_BOOLEAN = 6;
+    TYPE_EXPREF = 7;
+    TYPE_NULL = 8;
+    TYPE_ARRAY_NUMBER = 9;
+    TYPE_ARRAY_STRING = 10;
+    TYPE_NAME_TABLE = {
         1: 'number',
         2: 'any',
         3: 'string',
@@ -27,17 +27,16 @@ component displayname="runtime" {
 
     function init() {
         if(!APPLICATION.keyExists("jmesPathTreeInterpreter"))  APPLICATION.jmesPathTreeInterpreter = new TreeInterpreter();
-        this._interpreter = APPLICATION.jmesPathTreeInterpreter;
 
         this.functionTable = {
             // name: [function, <signature>]
             // The <signature> can be:
-            // 
+            //
             // {
             //   args: [[type1, type2], [type1, type2]],
             //   variadic: true|false
             // }
-            // 
+            //
             // Each arg in the arg list is a list of valid types
             // (if the function is overloaded and supports multiple
             // types.  If the type is "any" then no type checking
@@ -46,8 +45,16 @@ component displayname="runtime" {
             abs: {_func: this._functionAbs, _signature: [{types: [TYPE_NUMBER]}]},
             avg: {_func: this._functionAvg, _signature: [{types: [TYPE_ARRAY_NUMBER]}]},
             ceil: {_func: this._functionCeil, _signature: [{types: [TYPE_NUMBER]}]},
+            key_contains: {
+                _func: this._functionKeyContains,
+                _signature: [{types: [TYPE_OBJECT]}, {types: [TYPE_STRING]}]
+            },
             contains: {
                 _func: this._functionContains,
+                _signature: [{types: [TYPE_STRING, TYPE_ARRAY]}, {types: [TYPE_ANY]}]
+            },
+            matches: {
+                _func: this._functionMatches,
                 _signature: [{types: [TYPE_STRING, TYPE_ARRAY]}, {types: [TYPE_ANY]}]
             },
             'ends_with': {_func: this._functionEndsWith, _signature: [{types: [TYPE_STRING]}, {types: [TYPE_STRING]}]},
@@ -80,12 +87,12 @@ component displayname="runtime" {
         };
     }
 
-    
+
 
 
     function callFunction(name, resolvedArgs) {
         if (!this.functionTable.keyExists(name)) {
-            throw (type="JMESError", detail=  'Unknown function: ' &  name &  '()');
+            throw (type="JMESError", message=  'Unknown function: ' &  name &  '()');
         } else {
             var functionEntry = this.functionTable[name];
         }
@@ -103,17 +110,17 @@ component displayname="runtime" {
         if (signature[signature.len()].keyExists('variadic') && signature[signature.len()].variadic) {
             if (args.len() < signature.len()) {
                 pluralized = signature.len() == 1 ? ' argument' : ' arguments';
-                throw (type="JMESError", detail= 
-                    'ArgumentError: ' &  name &  '() ' & 
-                    'takes at least' &  signature.len() &  pluralized & 
+                throw (type="JMESError", message=
+                    'ArgumentError: ' &  name &  '() ' &
+                    'takes at least' &  signature.len() &  pluralized &
                     ' but received ' &  args.len()
                 );
             }
         } else if (args.len() != signature.len()) {
             pluralized = signature.len() == 1 ? ' argument' : ' arguments';
-            throw (type="JMESError", detail= 
-                'ArgumentError: ' &  name &  '() ' & 
-                'takes ' &  signature.len() &  pluralized & 
+            throw (type="JMESError", message=
+                'ArgumentError: ' &  name &  '() ' &
+                'takes ' &  signature.len() &  pluralized &
                 ' but received ' &  args.len()
             );
         }
@@ -123,9 +130,9 @@ component displayname="runtime" {
         for (var i = 1; i <= signature.len(); i++) {
             typeMatched = false;
             currentSpec = signature[i].types;
-            actualType = this._getTypeName(args[i]);
+            actualType = _getTypeName(args[i]);
             for (var j = 1; j <= currentSpec.len(); j++) {
-                if (this._typeMatches(actualType, currentSpec[j], args[i])) {
+                if (_typeMatches(actualType, currentSpec[j], args[i])) {
                     typeMatched = true;
                     break;
                 }
@@ -136,11 +143,11 @@ component displayname="runtime" {
                         return TYPE_NAME_TABLE[typeIdentifier];
                     })
                     .toList(',');
-                throw (type="JMESError", detail= 
-                    'TypeError: ' &  name &  '() ' & 
-                    'expected argument ' &  (i +  1) & 
-                    ' to be type ' &  expected & 
-                    ' but received type ' & 
+                throw (type="JMESError", message=
+                    'TypeError: ' &  name &  '() ' &
+                    'expected argument ' &  (i +  1) &
+                    ' to be type ' &  expected &
+                    ' but received type ' &
                     TYPE_NAME_TABLE[actualType] &  ' instead.'
                 );
             }
@@ -157,7 +164,7 @@ component displayname="runtime" {
         ) {
             // The expected type can either just be array,
             // or it can require a specific subtype (array of numbers).
-            // 
+            //
             // The simplest case is if "array" with no subtype is specified.
             if (expected == TYPE_ARRAY) {
                 return actual == TYPE_ARRAY;
@@ -171,7 +178,7 @@ component displayname="runtime" {
                     subtype = TYPE_STRING;
                 }
                 for (var i = 1; i <= argValue.len(); i++) {
-                    if (!this._typeMatches(this._getTypeName(argValue[i]), subtype, argValue[i])) {
+                    if (!_typeMatches(_getTypeName(argValue[i]), subtype, argValue[i])) {
                         return false;
                     }
                 }
@@ -198,7 +205,7 @@ component displayname="runtime" {
         }
     }
 
-    
+
     function _functionStartsWith(resolvedArgs) {
         return resolvedArgs[1].lastIndexOf(resolvedArgs[2]) == 0;
     }
@@ -208,7 +215,7 @@ component displayname="runtime" {
         return searchStr.indexOf(suffix, searchStr.len() - suffix.len()) != -1;
     }
     function _functionReverse(resolvedArgs) {
-        var typeName = this._getTypeName(resolvedArgs[1]);
+        var typeName = _getTypeName(resolvedArgs[1]);
         if (typeName == TYPE_STRING) {
             var originalStr = resolvedArgs[1];
             return reverse(resolvedArgs[1]);
@@ -232,8 +239,19 @@ component displayname="runtime" {
         }
         return sum / inputArray.len();
     }
+    function _functionKeyContains(resolvedArgs) {
+		var items = {};
+		for( var i in resolvedArgs[1]){
+			if(i.find(resolvedArgs[2]) > 0) items[i] = resolvedArgs[1][i];
+		}
+        return items;
+    }
     function _functionContains(resolvedArgs) {
         return resolvedArgs[1].find(resolvedArgs[2]) > 0;
+    }
+    function _functionMatches(resolvedArgs) {
+		var regexVal  = replace(resolvedArgs[2],"\\","\","All");
+        return resolvedArgs[1].refind(regexVal) > 0;
     }
     function _functionFloor(resolvedArgs) {
         return floor(resolvedArgs[1]);
@@ -252,11 +270,10 @@ component displayname="runtime" {
     }
     function _functionMap(resolvedArgs) {
         var mapped = [];
-        var interpreter = this._interpreter;
         var exprefNode = resolvedArgs[1];
         var elements = resolvedArgs[2];
         for (var i = 1; i <= elements.len(); i++) {
-            mapped.append(interpreter.visit(exprefNode, elements[i]));
+            mapped.append(application.interpreter.visit(exprefNode, elements[i]));
         }
         return mapped;
     }
@@ -272,7 +289,7 @@ component displayname="runtime" {
     }
     function _functionMax(resolvedArgs) {
         if (resolvedArgs[1].len() > 0) {
-            var typeName = this._getTypeName(resolvedArgs[1][1]);
+            var typeName = _getTypeName(resolvedArgs[1][1]);
             if (typeName == TYPE_NUMBER) {
                 return arrayMax(resolvedArgs[1]);
             } else {
@@ -286,12 +303,12 @@ component displayname="runtime" {
                 return maxElement;
             }
         } else {
-            return nullvalue();
+            return nullValue();
         }
     }
     function _functionMin(resolvedArgs) {
         if (resolvedArgs[1].len() > 0) {
-            var typeName = this._getTypeName(resolvedArgs[1][1]);
+            var typeName = _getTypeName(resolvedArgs[1][1]);
             if (typeName == TYPE_NUMBER) {
                 return arrayMin(resolvedArgs[1]);
             } else {
@@ -305,7 +322,7 @@ component displayname="runtime" {
                 return minElement;
             }
         } else {
-            return nullvalue();
+            return nullValue();
         }
     }
     function _functionSum(resolvedArgs) {
@@ -317,7 +334,7 @@ component displayname="runtime" {
         return sum;
     }
     function _functionType(resolvedArgs) {
-        switch (this._getTypeName(resolvedArgs[1])) {
+        switch (_getTypeName(resolvedArgs[1])) {
             case TYPE_NUMBER:
                 return 'number';
             case TYPE_STRING:
@@ -351,7 +368,7 @@ component displayname="runtime" {
         var keys = structKeyArray(obj);
         var values = [];
         for (var i = 1; i <= keys.len(); i++) {
-            values.append({ key: keys[i], value:obj[keys[i]]});
+            values.append({ 'key': keys[i], 'value':obj[keys[i]]});
         }
         return values;
     }
@@ -361,21 +378,21 @@ component displayname="runtime" {
         return listtoList.toList(toListChar);
     }
     function _functionToArray(resolvedArgs) {
-        if (this._getTypeName(resolvedArgs[1]) == TYPE_ARRAY) {
+        if (_getTypeName(resolvedArgs[1]) == TYPE_ARRAY) {
             return resolvedArgs[1];
         } else {
             return [resolvedArgs[1]];
         }
     }
     function _functionToString(resolvedArgs) {
-        if (this._getTypeName(resolvedArgs[1]) == TYPE_STRING) {
+        if (_getTypeName(resolvedArgs[1]) == TYPE_STRING) {
             return resolvedArgs[1];
         } else {
             return serializeJSON(resolvedArgs[1]);
         }
     }
     function _functionToNumber(resolvedArgs) {
-        var typeName = this._getTypeName(resolvedArgs[1]);
+        var typeName = _getTypeName(resolvedArgs[1]);
         var convertedValue;
         if (typeName == TYPE_NUMBER) {
             return resolvedArgs[1];
@@ -386,19 +403,19 @@ component displayname="runtime" {
                     return convertedValue;
                 }
             } catch( any e){
-                // throw (type="JMESError", detail= 'ParseError: String "' & resolvedArgs[1] & '" cannot be parsed as number');
+                throw (type="JMESError", message= 'ParseError: String "' & resolvedArgs[1] & '" cannot be parsed as number');
 
             }
         }
-        return nullvalue();
+        return nullValue();
     }
     function _functionNotNull(resolvedArgs) {
         for (var i = 1; i <= resolvedArgs.len(); i++) {
-            if (this._getTypeName(resolvedArgs[i]) != TYPE_NULL) {
+            if (_getTypeName(resolvedArgs[i]) != TYPE_NULL) {
                 return resolvedArgs[i];
             }
         }
-        return nullvalue();
+        return nullValue();
     }
     function _functionSort(resolvedArgs) {
         var sortedArray = resolvedArgs[1];
@@ -411,11 +428,10 @@ component displayname="runtime" {
         if (sortedArray.len() == 0) {
             return sortedArray;
         }
-        var interpreter = this._interpreter;
         var exprefNode = resolvedArgs[2];
-        var requiredType = this._getTypeName(interpreter.visit(exprefNode, sortedArray[1]));
+        var requiredType = _getTypeName(application.interpreter.visit(exprefNode, sortedArray[1]));
         if ([TYPE_NUMBER, TYPE_STRING].indexOf(requiredType) < 0) {
-            throw (type="JMESError", detail= 'TypeError');
+            throw (type="JMESError", message= 'TypeError');
         }
         var that = this;
         // In order to get a stable sort out of an unstable
@@ -430,16 +446,16 @@ component displayname="runtime" {
             decorated.append([i, sortedArray[i]]);
         }
         decorated.sort(function(a, b) {
-            var exprA = interpreter.visit(exprefNode, a[2]);
-            var exprB = interpreter.visit(exprefNode, b[2]);
+            var exprA = application.interpreter.visit(exprefNode, a[2]);
+            var exprB = application.interpreter.visit(exprefNode, b[2]);
             if (that._getTypeName(exprA) != requiredType) {
-                throw (type="JMESError", detail= 
-                    'TypeError: expected ' &  requiredType &  ', received ' & 
+                throw (type="JMESError", message=
+                    'TypeError: expected ' &  requiredType &  ', received ' &
                     that._getTypeName(exprA)
                 );
             } else if (that._getTypeName(exprB) != requiredType) {
-                throw (type="JMESError", detail= 
-                    'TypeError: expected ' &  requiredType &  ', received ' & 
+                throw (type="JMESError", message=
+                    'TypeError: expected ' &  requiredType &  ', received ' &
                     that._getTypeName(exprB)
                 );
             }
@@ -463,7 +479,7 @@ component displayname="runtime" {
     function _functionMaxBy(resolvedArgs) {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
-        var keyFunction = this.createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
+        var keyFunction = .createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
         var maxNumber = Javacast('double',1).NEGATIVE_INFINITY;
         var maxRecord;
         var current;
@@ -479,7 +495,7 @@ component displayname="runtime" {
     function _functionMinBy(resolvedArgs) {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
-        var keyFunction = this.createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
+        var keyFunction = .createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
         var minNumber = Javacast('double',1).POSITIVE_INFINITY;
         var minRecord;
         var current;
@@ -493,14 +509,12 @@ component displayname="runtime" {
         return minRecord;
     }
     function createKeyFunction(exprefNode, allowedTypes) {
-        var that = this;
-        var interpreter = this._interpreter;
         var keyFunc = function(x) {
-            var current = interpreter.visit(exprefNode, x);
-            if (allowedTypes.indexOf(that._getTypeName(current)) < 0) {
-                var msg = 'TypeError: expected one of ' &  allowedTypes & 
-                ', received ' &  that._getTypeName(current);
-                throw (type="JMESError", detail= msg);
+            var current = application.interpreter.visit(exprefNode, x);
+            if (allowedTypes.indexOf(_getTypeName(current)) < 0) {
+                var msg = 'TypeError: expected one of ' &  allowedTypes &
+                ', received ' &  _getTypeName(current);
+                throw (type="JMESError", message= msg);
             }
             return current;
         };
