@@ -7,12 +7,6 @@ component extends="testbox.system.BaseSpec"{
 
 	function beforeAll(){
 		jmespath = new models.JmesPath();
-		tokenize = jmespath.tokenize;
-		compile = jmespath.compile;
-		search = jmespath.search;
-		//strictDeepEqual = jmespath.strictDeepEqual;
-
-
 	}
 
 	function afterAll(){
@@ -48,7 +42,7 @@ component extends="testbox.system.BaseSpec"{
                                     data = { testcase = testcase },
                                     body = function(data) {
                                         var testcase = data.testcase;
-                                        expect(search(given, testcase.expression)).toBe(testcase.result ?: NullValue());
+                                        expect(jmespath.search(given, testcase.expression)).toBe(testcase.result ?: NullValue());
                                     }
                                 );
                             }

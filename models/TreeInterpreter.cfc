@@ -1,4 +1,5 @@
-component displayname="TreeInterpreter" {
+component singleton accessors=true displayname="TreeInterpreter" {
+	property name="jmesPathRuntime" inject="Runtime@JMESPath";
 
     TOK_EOF = 'EOF';
     TOK_UNQUOTEDIDENTIFIER = 'UnquotedIdentifier';
@@ -31,8 +32,9 @@ component displayname="TreeInterpreter" {
     TOK_LITERAL = 'Literal';
 
     function init(runtime) {
-        if (!isNull(runtime)) this.runtime = runtime;
+        if (!isNull(runtime)) variables.jmesPathRuntime = runtime;
     }
+
     function strictDeepEqual(first, second) {
         if(isNull(first) && isNull(second)) return true;
         if(isNull(first) || isNull(second)) return false;
@@ -93,7 +95,7 @@ component displayname="TreeInterpreter" {
         if(isNull(obj) ) return true;
         if(isNumeric(obj)) return false;
         if(isBoolean(obj)) return !obj;
-        
+
         if ((isSimpleValue(obj) && obj == '' && obj != 0)) {
             return true;
         } else if (isArray(obj) && obj.len() == 0) {
@@ -161,8 +163,7 @@ component displayname="TreeInterpreter" {
                         // echo(" = structNull" & "<br/>")
                         return;
                     } else {
-                        field = value[node.name];
-                        // echo(" = " & serializeJSON(field) & "<br/>")
+						field = value[node.name];
                         return field;
                     }
                 }
@@ -357,8 +358,12 @@ component displayname="TreeInterpreter" {
                 for (i = 1; i <= node.children.len(); i++) {
                     resolvedArgs.append(this.visit(node.children[i], value));
                 }
-                if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
-                return APPLICATION.jmesPathRuntime.callFunction(node.name, resolvedArgs);
+                if(isNull(variables.jmesPathRuntime)){ 
+                    if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
+                    return APPLICATION.jmesPathRuntime.callFunction(node.name, resolvedArgs);
+                } else {
+                    return jmesPathRuntime.callFunction(node.name, resolvedArgs);
+                }
             case 'ExpressionReference':
                 var refNode = node.children[1];
                 // Tag the node with a specific attribute so the type

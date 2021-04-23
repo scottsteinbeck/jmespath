@@ -7,8 +7,7 @@ component extends="testbox.system.BaseSpec"{
 
 	function beforeAll(){
 		jmespath = new models.JmesPath();
-		tokenize = jmespath.tokenize;
-		compile = jmespath.compile;
+		TreeInterpreter = Application.JMESPathTreeInterpreter;
 		//strictDeepEqual = jmespath.strictDeepEqual;
 
 
@@ -47,26 +46,26 @@ component extends="testbox.system.BaseSpec"{
 
 		describe('tokenize', function() {
 			it('should tokenize unquoted identifier', function() {
-				expect(tokenize('foo')).toBe(
+				expect(jmespath.tokenize('foo')).toBe(
 								[{type: "UnquotedIdentifier",
 								value: "foo",
 								start: 1}]);
 			});
 			it('should tokenize unquoted identifier with underscore', function() {
-				expect(tokenize('_underscore')).toBe(
+				expect(jmespath.tokenize('_underscore')).toBe(
 								[{type: "UnquotedIdentifier",
 								value: "_underscore",
 								start: 1}]);
 			});
 			it('should tokenize unquoted identifier with numbers', function() {
-				expect(tokenize('foo123')).toBe(
+				expect(jmespath.tokenize('foo123')).toBe(
 								[{type: "UnquotedIdentifier",
 								value: "foo123",
 								start: 1}]);
 			});
 			it('should tokenize dotted lookups', function() {
 				expect(
-					tokenize('foo.bar')).toBe(
+					jmespath.tokenize('foo.bar')).toBe(
 					[{type: "UnquotedIdentifier", value: "foo", start: 1},
 					{type: "Dot", value: ".", start: 4},
 					{type: "UnquotedIdentifier", value: "bar", start: 5},
@@ -74,7 +73,7 @@ component extends="testbox.system.BaseSpec"{
 			});
 			it('should tokenize numbers', function() {
 				expect(
-					tokenize('foo[0]')).toBe(
+					jmespath.tokenize('foo[0]')).toBe(
 					[{type: "UnquotedIdentifier", value: "foo", start: 1},
 					{type: "Lbracket", value: "[", start: 4},
 					{type: "Number", value: 0, start: 5},
@@ -83,65 +82,65 @@ component extends="testbox.system.BaseSpec"{
 			});
 			it('should tokenize numbers with multiple digits', function() {
 				expect(
-					tokenize("12345")).toBe(
+					jmespath.tokenize("12345")).toBe(
 					[{type: "Number", value: 12345, start: 1}]);
 			});
 			it('should tokenize negative numbers', function() {
 				expect(
-					tokenize("-12345")).toBe(
+					jmespath.tokenize("-12345")).toBe(
 					[{type: "Number", value: -12345, start: 1}]);
 			});
 			it('should tokenize quoted identifier', function() {
-				expect(tokenize('"foo"')).toBe(
+				expect(jmespath.tokenize('"foo"')).toBe(
 								[{type: "QuotedIdentifier",
 								value: "foo",
 								start: 1}]);
 			});
 			it('should tokenize quoted identifier with unicode escape', function() {
-				expect(tokenize('"\\u2713"')).toBe(
+				expect(jmespath.tokenize('"\\u2713"')).toBe(
 								[{type: "QuotedIdentifier",
 								value: "✓",
 								start: 1}]);
 			});
 			it('should tokenize literal lists', function() {
-				expect(tokenize("`[0, 1]`")).toBe(
+				expect(jmespath.tokenize("`[0, 1]`")).toBe(
 								[{type: "Literal",
 								value: [0, 1],
 								start: 1}]);
 			});
 			it('should tokenize literal dict', function() {
-				expect(tokenize('`{\"foo\": \"bar\"}`')).toBe(
+				expect(jmespath.tokenize('`{\"foo\": \"bar\"}`')).toBe(
 								[{type: "Literal",
 								value: {"foo": "bar"},
 								start: 1}]);
 			});
 			it('should tokenize literal strings', function() {
-				expect(tokenize('`\"foo\"`')).toBe(
+				expect(jmespath.tokenize('`\"foo\"`')).toBe(
 								[{type: "Literal",
 								value: "foo",
 								start: 1}]);
 			});
 			it('should tokenize json literals', function() {
-				expect(tokenize("`true`")).toBe(
+				expect(jmespath.tokenize("`true`")).toBe(
 								[{type: "Literal",
 								value: true,
 								start: 1}]);
 			});
 			it('should not requiring surrounding quotes for strings', function() {
-				expect(tokenize("`foo`")).toBe(
+				expect(jmespath.tokenize("`foo`")).toBe(
 								[{type: "Literal",
 								value: "foo",
 								start: 1}]);
 			});
 			it('should not requiring surrounding quotes for numbers', function() {
-				expect(tokenize("`20`")).toBe(
+				expect(jmespath.tokenize("`20`")).toBe(
 								[{type: "Literal",
 								value: 20,
 								start: 1}]);
 			});
 			it('should tokenize literal lists with chars afterwards', function() {
 				expect(
-					tokenize("`[0, 1]`[0]")).toBe( [
+					jmespath.tokenize("`[0, 1]`[0]")).toBe( [
 						{type: "Literal", value: [0, 1], start: 1},
 						{type: "Lbracket", value: "[", start: 9},
 						{type: "Number", value: 0, start: 10},
@@ -150,7 +149,7 @@ component extends="testbox.system.BaseSpec"{
 			});
 			it('should tokenize two char tokens with shared prefix', function() {
 				expect(
-					tokenize("[?foo]")).toBe(
+					jmespath.tokenize("[?foo]")).toBe(
 					[{type: "Filter", value: "[?", start: 1},
 					{type: "UnquotedIdentifier", value: "foo", start: 3},
 					{type: "Rbracket", value: "]", start: 6}]
@@ -158,30 +157,30 @@ component extends="testbox.system.BaseSpec"{
 			});
 			it('should tokenize flatten operator', function() {
 				expect(
-					tokenize("[]")).toBe(
+					jmespath.tokenize("[]")).toBe(
 					[{type: "Flatten", value: "[]", start: 1}]);
 			});
 			it('should tokenize comparators', function() {
-				expect(tokenize("<")).toBe(
+				expect(jmespath.tokenize("<")).toBe(
 								[{type: "LT",
 								value: "<",
 								start: 1}]);
 			});
 			it('should tokenize two char tokens without shared prefix', function() {
 				expect(
-					tokenize("==")).toBe(
+					jmespath.tokenize("==")).toBe(
 					[{type: "EQ", value: "==", start: 1}]
 				);
 			});
 			it('should tokenize not equals', function() {
 				expect(
-					tokenize("!=")).toBe(
+					jmespath.tokenize("!=")).toBe(
 					[{type: "NE", value: "!=", start: 1}]
 				);
 			});
 			it('should tokenize the OR token', function() {
 				expect(
-					tokenize("a||b")).toBe(
+					jmespath.tokenize("a||b")).toBe(
 					[
 						{type: "UnquotedIdentifier", value: "a", start: 1},
 						{type: "Or", value: "||", start: 2},
@@ -191,7 +190,7 @@ component extends="testbox.system.BaseSpec"{
 			});
 			it('should tokenize function calls', function() {
 				expect(
-					tokenize("abs(@)")).toBe(
+					jmespath.tokenize("abs(@)")).toBe(
 					[
 						{type: "UnquotedIdentifier", value: "abs", start: 1},
 						{type: "Lparen", value: "(", start: 4},
@@ -204,60 +203,73 @@ component extends="testbox.system.BaseSpec"{
 		});
 
 
+		describe('async', function() {
+			it('should be thread safe', function() {
+			var tasks = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
+			var origJSON = {"foo": [{"age": 20}, {"age": 25},{"age": 30}, {"age": 35},{"age": 40}]};
+			results = tasks.map( ()=>{
+					var searchStr = "foo[?age > `30`]";
+					var result = jmespath.search(origJSON,searchStr);
+					var expResult = [{"age":35},{"age":40}];
+					return result;
+			}, true )
+			});
+		});
+
 		describe('parsing', function() {
 			it('should parse field node', function() {
-				expect(compile('foo')).toBe(
+				expect(jmespath.compile('foo')).toBe(
 								{type: 'Field', name: 'foo'});
 			});
 		});
 
-		/*describe('start: 1', function() {
+		describe('start: 1', function() {
 			it('should compare scalars', function() {
-				expect(strictDeepEqual('a', 'a')).toBe( true);
+				expect(TreeInterpreter.strictDeepEqual('a', 'a')).toBe( true);
 			});
 			it('should be false for different types', function() {
-				expect(strictDeepEqual('a', 2)).toBe( false);
+				expect(TreeInterpreter.strictDeepEqual('a', 2)).toBe( false);
 			});
 			it('should be false for arrays of different lengths', function() {
-				expect(strictDeepEqual([0, 1], [1, 2, 3])).toBe( false);
+				expect(TreeInterpreter.strictDeepEqual([0, 1], [1, 2, 3])).toBe( false);
 			});
 			it('should be true for identical arrays', function() {
-				expect(strictDeepEqual([0, 1], [0, 1])).toBe( true);
+				expect(TreeInterpreter.strictDeepEqual([0, 1], [0, 1])).toBe( true);
 			});
 			it('should be true for nested arrays', function() {
 				expect(
-					strictDeepEqual([[0, 1], [2, 3]], [[0, 1], [2, 3]])).toBe( true);
+					TreeInterpreter.strictDeepEqual([[0, 1], [2, 3]], [[0, 1], [2, 3]])).toBe( true);
 			});
 			it('should be true for nested arrays of strings', function() {
 				expect(
-					strictDeepEqual([["a", "b"], ["c", "d"]],
+					TreeInterpreter.strictDeepEqual([["a", "b"], ["c", "d"]],
 									[["a", "b"], ["c", "d"]])).toBe( true);
 			});
 			it('should be false for different arrays of the same length', function() {
-				expect(strictDeepEqual([0, 1], [1, 2])).toBe( false);
+				expect(TreeInterpreter.strictDeepEqual([0, 1], [1, 2])).toBe( false);
 			});
 			it('should handle object literals', function() {
-				expect(strictDeepEqual({a: 1, b: 2}, {a: 1, b: 2})).toBe(true);
+				expect(TreeInterpreter.strictDeepEqual({a: 1, b: 2}, {a: 1, b: 2})).toBe(true);
 			});
 			it('should handle keys in first not in second', function() {
-				expect(strictDeepEqual({a: 1, b: 2}, {a: 1})).toBe( false);
+				expect(TreeInterpreter.strictDeepEqual({a: 1, b: 2}, {a: 1})).toBe( false);
 			});
 			it('should handle keys in second not in first', function() {
-				expect(strictDeepEqual({a: 1}, {a: 1, b: 2})).toBe( false);
+				expect(TreeInterpreter.strictDeepEqual({a: 1}, {a: 1, b: 2})).toBe( false);
 			});
 			it('should handle nested objects', function() {
 				expect(
-					strictDeepEqual({a: {b: [1, 2]}},
+					TreeInterpreter.strictDeepEqual({a: {b: [1, 2]}},
 									{a: {b: [1, 2]}})).toBe( true);
 			});
 			it('should handle nested objects that are not equal', function() {
 				expect(
-					strictDeepEqual({a: {b: [1, 2]}},
+					TreeInterpreter.strictDeepEqual({a: {b: [1, 2]}},
 									{a: {b: [1, 4]}})).toBe(false);
 			});
 		});
 
-		 describe('search', function() {
+		describe('search', function() {
 			it(
 				'should throw a readable error when invalid arguments are provided to a function',
 				function() {
@@ -271,7 +283,7 @@ component extends="testbox.system.BaseSpec"{
 					}
 				}
 			);
-		}); */
+		});
 
 
 

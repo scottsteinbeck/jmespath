@@ -1,22 +1,39 @@
-component {
+component accessors=true{
+	property name="jmesPathLexer" inject="Lexer@JMESPath";
+	property name="jmesPathParser" inject="Parser@JMESPath";
+	property name="jmesPathRuntime" inject="Runtime@JMESPath";
+	property name="jmesPathTreeInterpreter" inject="TreeInterpreter@JMESPath";
 
-    function compile(stream) {
-        if(!APPLICATION.keyExists("jmespathparser")){
-            APPLICATION.jmesPathParser = new Parser();
+	function init(){
+        if(isNull(variables.jmesPathLexer)){
+            if(!APPLICATION.keyExists("jmesPathLexer"))  APPLICATION.jmesPathLexer = new Lexer();
+            setJmesPathLexer(APPLICATION.jmesPathLexer);
         }
-        var ast = APPLICATION.jmesPathParser.parse(stream);
+        if(isNull(variables.jmesPathParser)){ 
+            if(!APPLICATION.keyExists("jmesPathParser"))  APPLICATION.jmesPathParser = new Parser();
+            setJmesPathParser(APPLICATION.jmesPathParser);
+        }
+        if(isNull(variables.jmesPathRuntime)){ 
+            if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
+            setJmesPathRuntime(APPLICATION.jmesPathRuntime);
+        }
+		if(isNull(variables.jmesPathTreeInterpreter)){
+            if(!APPLICATION.keyExists("jmesPathTreeInterpreter"))  APPLICATION.jmesPathTreeInterpreter = new TreeInterpreter(jmesPathRuntime);
+            setJmesPathTreeInterpreter(APPLICATION.jmesPathTreeInterpreter );
+        } 
+		return this;
+	}    
+    
+    function compile(stream) {
+        var ast = jmesPathParser.parse(stream);
         return ast;
     }
     function tokenize(stream) {
-        if(!APPLICATION.keyExists("jmesPathLexer"))  APPLICATION.jmesPathLexer= new Lexer();
-        return APPLICATION.jmesPathLexer.tokenize(stream);
+        return jmesPathLexer.tokenize(stream);
     }
     function search(data, expression) {
-        if(!APPLICATION.keyExists("jmesPathParser"))  APPLICATION.jmesPathParser = new Parser();
-        if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
-        if(!APPLICATION.keyExists("jmesPathTreeInterpreter"))  APPLICATION.jmesPathTreeInterpreter = new TreeInterpreter(APPLICATION.jmesPathRuntime);
-        var node = APPLICATION.jmesPathParser.parse(expression);
-        return APPLICATION.jmesPathTreeInterpreter.search(node, data);
+		var node = jmesPathParser.parse(expression);
+        return jmesPathTreeInterpreter.search(node, data);
     }
 
 }
