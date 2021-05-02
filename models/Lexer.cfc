@@ -235,7 +235,6 @@ component accessors=true singleton displayname="Lexer" {
         while (state._current < maxLength && isNum( lookupValue(state,stream)) ) {
             advance(state,stream);
         }
-        // var value = parseNumber(slice(stream, start, state._current));
         var value = slice(stream, start, state._current).replaceAll('[^0-9\-]', '');
         return {type: TOK_NUMBER, value: value, start: start};
     }
