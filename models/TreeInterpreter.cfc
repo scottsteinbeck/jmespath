@@ -1,6 +1,5 @@
 component singleton accessors=true displayname="TreeInterpreter" {
-
-    property name="jmesPathRuntime" inject="Runtime@JMESPath";
+	property name="jmesPathRuntime" inject="Runtime@JMESPath";
 
     TOK_EOF = 'EOF';
     TOK_UNQUOTEDIDENTIFIER = 'UnquotedIdentifier';
@@ -39,12 +38,11 @@ component singleton accessors=true displayname="TreeInterpreter" {
     function nullValue() {
         return javacast('null', '');
     }
-
     function strictDeepEqual(first, second) {
-        if (isNull(first) && isNull(second)) return true;
-        if (isNull(first) || isNull(second)) return false;
-        if (getMetadata(first).getName() != getMetadata(second).getName()) return false;
-        if (isSimpleValue(first) && first == second) {
+        if(isNull(first) && isNull(second)) return true;
+        if(isNull(first) || isNull(second)) return false;
+        if(getMetadata(first).getName() != getMetadata(second).getName() ) return false;
+        if(isSimpleValue(first) && first == second ){
             return true;
         }
 
@@ -62,13 +60,13 @@ component singleton accessors=true displayname="TreeInterpreter" {
             }
             return true;
         }
-        if (isStruct(first) && isStruct(second)) {
+        if (isStruct(first)  && isStruct(second)) {
             // echo('we are here')
             // An object is equal if it has the same key/value pairs.
             var keysSeen = {};
             for (var key in first) {
                 // echo('first -> ' & key & '<br/>');
-                if (structKeyExists(first, key) && structKeyExists(second, key)) {
+                if (structKeyExists(first, key) && structKeyExists(second,key)) {
                     if (strictDeepEqual(first[key], second[key]) == false) {
                         return false;
                     }
@@ -79,8 +77,8 @@ component singleton accessors=true displayname="TreeInterpreter" {
             // in first.
             for (var key2 in second) {
                 // echo('second -> ' & key2 &  '<br/>');
-                if (!structKeyExists(second, key2) || !structKeyExists(keysSeen, key2)) {
-                    return false;
+                if (!structKeyExists(second, key2) || !structKeyExists(keysSeen,key2)) {
+                        return false;
                 }
             }
             return true;
@@ -88,7 +86,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
         return false;
     }
     function isFalse(obj) {
-        // // echo("isFalse check: " & serializeJSON(obj) & " = ");
+        //// echo("isFalse check: " & serializeJSON(obj) & " = ");
         // From the spec:
         // A false value corresponds to the following values:
         // Empty list
@@ -97,9 +95,9 @@ component singleton accessors=true displayname="TreeInterpreter" {
         // False boolean
         // First check the scalar values.
         // null value
-        if (isNull(obj)) return true;
-        if (isNumeric(obj)) return false;
-        if (isBoolean(obj)) return !obj;
+        if(isNull(obj) ) return true;
+        if(isNumeric(obj)) return false;
+        if(isBoolean(obj)) return !obj;
 
         if ((isSimpleValue(obj) && obj == '' && obj != 0)) {
             return true;
@@ -120,7 +118,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
             // echo("true<br/>");
             return true;
         } else {
-            // echo("false<br/>");
+             // echo("false<br/>");
             return false;
         }
     }
@@ -146,6 +144,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
         // return str.match(/^\s*(.*)/)[2];
     }
     function search(node, value) {
+
         return this.visit(node, value);
     }
     function visit(node, value) {
@@ -167,7 +166,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                         // echo(" = structNull" & "<br/>")
                         return;
                     } else {
-                        field = value[node.name];
+						field = value[node.name];
                         return field;
                     }
                 }
@@ -175,17 +174,17 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 return;
             case 'Subexpression':
                 result = this.visit(node.children[1], value);
-                if (isNull(result)) return;
+                if (isNull(result))  return;
                 for (i = 2; i <= node.children.len(); i++) {
                     result = this.visit(node.children[2], result);
-                    if (isNull(result)) return;
+                    if (isNull(result))  return;
                 }
                 return result;
             case 'IndexExpression':
-                left = this.visit(node.children[1], value) ?: nullValue();
-                if (isNull(left)) return;
-                right = this.visit(node.children[2], left) ?: nullValue();
-                if (isNull(right)) return;
+                left = this.visit(node.children[1], value) ?: NullValue();
+                if(isNull(left)) return;
+                right = this.visit(node.children[2], left) ?: NullValue();
+                if(isNull(right)) return;
                 return right;
             case 'Index':
                 if (!isArray(value)) {
@@ -193,7 +192,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 }
                 var index = node.value;
                 if (index < 0) {
-                    index = value.len() + index + 1;
+                    index = value.len()  + index + 1;
                 } else {
                     index++; // to account for coldfusion starting at 1
                 }
@@ -264,7 +263,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                         filtered.append(base[i]);
                     }
                 }
-                for (var j = 1; j <= filtered.len(); j++) {
+                for (var j = 1; j <=filtered.len(); j++) {
                     current = this.visit(node.children[2], filtered[j]);
                     if (!isNull(current)) {
                         finalResults.append(current);
@@ -276,10 +275,10 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 second = this.visit(node.children[2], value);
                 switch (node.name) {
                     case TOK_EQ:
-                        result = strictDeepEqual(first ?: nullValue(), second ?: nullValue());
+                        result = strictDeepEqual(first ?: NullValue(), second ?: NullValue());
                         break;
                     case TOK_NE:
-                        result = !strictDeepEqual(first ?: nullValue(), second ?: nullValue());
+                        result = !strictDeepEqual(first ?: NullValue(), second ?: NullValue());
                         break;
                     case TOK_GT:
                         result = first > second;
@@ -294,7 +293,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                         result = first <= second;
                         break;
                     default:
-                        throw(type = 'JMESError', detail = 'Unknown comparator: ' + node.name);
+                        throw (type="JMESError", detail='Unknown comparator: ' + node.name);
                 }
                 return result;
             case TOK_FLATTEN:
@@ -353,7 +352,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 return node.value;
             case TOK_PIPE:
                 left = this.visit(node.children[1], value);
-                if (isNull(left)) return;
+                if(isNull(left)) return;
                 return this.visit(node.children[2], left);
             case TOK_CURRENT:
                 return value;
@@ -362,8 +361,8 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 for (i = 1; i <= node.children.len(); i++) {
                     resolvedArgs.append(this.visit(node.children[i], value));
                 }
-                if (isNull(variables.jmesPathRuntime)) {
-                    if (!APPLICATION.keyExists('jmesPathRuntime')) APPLICATION.jmesPathRuntime = new Runtime();
+                if(isNull(variables.jmesPathRuntime)){ 
+                    if(!APPLICATION.keyExists("jmesPathRuntime"))  APPLICATION.jmesPathRuntime = new Runtime();
                     return APPLICATION.jmesPathRuntime.callFunction(node.name, resolvedArgs);
                 } else {
                     return jmesPathRuntime.callFunction(node.name, resolvedArgs);
@@ -375,19 +374,19 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 refNode.jmespathType = TOK_EXPREF;
                 return refNode;
             default:
-                throw(type = 'JMESError', detail = 'Unknown node type: ' + node.type);
+                throw(type="JMESError", detail='Unknown node type: ' + node.type);
         }
     }
 
     function computeSliceParams(arrayLength, sliceParams) {
-        var start = sliceParams[1] ?: nullValue();
-        var stop = sliceParams[2] ?: nullValue();
-        var step = sliceParams[3] ?: nullValue();
-        var computed = [nullValue(), nullValue(), nullValue()];
+        var start = sliceParams[1] ?: NullValue();
+        var stop = sliceParams[2] ?: NullValue();
+        var step = sliceParams[3] ?: NullValue();
+        var computed = [nullvalue(), nullvalue(), nullvalue()];
         if (isNull(step)) {
             step = 1;
         } else if (step === 0) {
-            throw(type = 'RuntimeError', detail = 'Invalid slice, step cannot be 0');
+            throw(type="RuntimeError", detail='Invalid slice, step cannot be 0');
         }
         var stepValueNegative = step < 0 ? true : false;
 
@@ -402,11 +401,11 @@ component singleton accessors=true displayname="TreeInterpreter" {
         } else {
             stop = capSliceRange(arrayLength, stop, step);
         }
-        if (start < stop) {
-            start += 1;
-        } else if (start > stop) {
-            start += 1;
-            stop += 2;
+        if(start < stop){
+            start+=1;
+        } else if (start > stop){
+            start+=1;
+            stop+=2;
         }
         computed[1] = start;
         computed[2] = stop;
@@ -414,7 +413,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
         return computed;
     }
 
-    function capSliceRange(arrayLength, actualValue, step) {
+    function capSliceRange (arrayLength, actualValue, step) {
         if (actualValue < 0) {
             actualValue += arrayLength;
             if (actualValue < 0) {

@@ -1,6 +1,5 @@
 component singleton accessors=true displayname="Parser" {
-
-    property name="jmesPathLexer" inject="Lexer@JMESPath";
+	property name="jmesPathLexer" inject="Lexer@JMESPath";
 
     TOK_EOF = 'EOF';
     TOK_UNQUOTEDIDENTIFIER = 'UnquotedIdentifier';
@@ -90,29 +89,27 @@ component singleton accessors=true displayname="Parser" {
     errorName[TOK_LBRACKET] = '[';
     errorName[TOK_LPAREN] = '(';
 
-    function init(struct settings = {}) {
-        if (isNull(variables.jmesPathLexer)) {
-            if (!APPLICATION.keyExists('jmesPathLexer')) APPLICATION.jmesPathLexer = new Lexer();
+	function init( struct settings={} ){
+        if(isNull(variables.jmesPathLexer)){
+            if(!APPLICATION.keyExists("jmesPathLexer"))  APPLICATION.jmesPathLexer = new Lexer();
             setJmesPathLexer(APPLICATION.jmesPathLexer);
         }
-        return this;
-    }
+		return this;
+	}   
 
     function nullValue() {
         return javacast('null', '');
     }
-
     function parse(expression) {
-        var state = {tokens: _loadTokens(expression), index: 1}
+        var state = {
+            tokens: _loadTokens(expression),
+            index: 1
+        }
 
-        var ast = this.expression(0, state);
-        if (this._lookahead(0, state) != TOK_EOF) {
-            var t = this._lookaheadToken(0, state);
-            throw(
-                message = 'Unexpected token type',
-                type = 'JSONException',
-                detail = 'Unexpected token type: ' & errorName[t.type] & ', value: ' & t.value
-            );
+        var ast = this.expression(0,state);
+        if (this._lookahead(0,state) != TOK_EOF) {
+            var t = this._lookaheadToken(0,state);
+            throw( message= 'Unexpected token type', type="JSONException", detail= 'Unexpected token type: ' & errorName[t.type] & ', value: ' & t.value);
         }
         return ast;
     }
@@ -124,14 +121,14 @@ component singleton accessors=true displayname="Parser" {
     }
 
     function expression(rbp, state) {
-        var leftToken = this._lookaheadToken(0, state);
+        var leftToken = this._lookaheadToken(0,state);
         this._advance(state);
         var left = this.nud(leftToken, state);
-        var currentToken = this._lookahead(0, state);
+        var currentToken = this._lookahead(0,state);
         while (rbp < bindingPower[currentToken]) {
             this._advance(state);
             left = this.led(currentToken, left, state);
-            currentToken = this._lookahead(0, state);
+            currentToken = this._lookahead(0,state);
         }
         return left;
     }
@@ -159,11 +156,8 @@ component singleton accessors=true displayname="Parser" {
                 return {type: 'Field', name: token.value};
             case TOK_QUOTEDIDENTIFIER:
                 var node = {type: 'Field', name: token.value};
-                if (this._lookahead(0, state) == TOK_LPAREN) {
-                    throw(
-                        type = 'JSONException',
-                        message = 'Quoted identifier not allowed for function names:' & errorName[token.value]
-                    );
+                if (this._lookahead(0,state) == TOK_LPAREN) {
+                    throw( type="JSONException", message='Quoted identifier not allowed for function names:' & errorName[token.value]);
                 }
                 return node;
             case TOK_NOT:
@@ -171,8 +165,8 @@ component singleton accessors=true displayname="Parser" {
                 return {type: 'NotExpression', children: [right]};
             case TOK_STAR:
                 left = {type: 'Identity'};
-                right = nullValue();
-                if (this._lookahead(0, state) == TOK_RBRACKET) {
+                right = nullvalue();
+                if (this._lookahead(0,state) == TOK_RBRACKET) {
                     // This can happen in a multiselect,
                     // [a, b, *]
                     right = {type: 'Identity'};
@@ -189,12 +183,12 @@ component singleton accessors=true displayname="Parser" {
                 right = this._parseProjectionRHS(bindingPower.Flatten, state);
                 return {type: 'Projection', children: [left, right]};
             case TOK_LBRACKET:
-                if (this._lookahead(0, state) == TOK_NUMBER || this._lookahead(0, state) == TOK_COLON) {
+                if (this._lookahead(0,state) == TOK_NUMBER || this._lookahead(0,state) == TOK_COLON) {
                     right = this._parseIndexExpression(state);
                     return this._projectIfSlice({type: 'Identity'}, right, state);
                 } else if (
-                    this._lookahead(0, state) == TOK_STAR &&
-                    this._lookahead(1, state) == TOK_RBRACKET
+                    this._lookahead(0,state) == TOK_STAR &&
+                    this._lookahead(1,state) == TOK_RBRACKET
                 ) {
                     this._advance(state);
                     this._advance(state);
@@ -209,16 +203,16 @@ component singleton accessors=true displayname="Parser" {
                 return {type: 'ExpressionReference', children: [expression]};
             case TOK_LPAREN:
                 var args = [];
-                while (this._lookahead(0, state) != TOK_RPAREN) {
-                    if (this._lookahead(0, state) == TOK_CURRENT) {
+                while (this._lookahead(0,state) != TOK_RPAREN) {
+                    if (this._lookahead(0,state) == TOK_CURRENT) {
                         expression = {type: TOK_CURRENT};
                         this._advance(state);
                     } else {
-                        expression = this.expression(0, state);
+                        expression = this.expression(0,state);
                     }
                     args.append(expression);
                 }
-                this._match(TOK_RPAREN, state);
+                this._match(TOK_RPAREN,state);
                 return args[1];
             default:
                 this._errorToken(token, state);
@@ -229,7 +223,7 @@ component singleton accessors=true displayname="Parser" {
         switch (tokenName) {
             case TOK_DOT:
                 var rbp = bindingPower.Dot;
-                if (this._lookahead(0, state) != TOK_STAR) {
+                if (this._lookahead(0,state) != TOK_STAR) {
                     right = this._parseDotRHS(rbp, state);
                     return {type: 'Subexpression', children: [left, right]};
                 }
@@ -251,25 +245,25 @@ component singleton accessors=true displayname="Parser" {
                 var args = [];
                 var expression = '';
                 var node = '';
-                while (this._lookahead(0, state) != TOK_RPAREN) {
-                    if (this._lookahead(0, state) == TOK_CURRENT) {
+                while (this._lookahead(0,state) != TOK_RPAREN) {
+                    if (this._lookahead(0,state) == TOK_CURRENT) {
                         expression = {type: TOK_CURRENT};
                         this._advance(state);
                     } else {
-                        expression = this.expression(0, state);
+                        expression = this.expression(0,state);
                     }
-                    if (this._lookahead(0, state) == TOK_COMMA) {
-                        this._match(TOK_COMMA, state);
+                    if (this._lookahead(0,state) == TOK_COMMA) {
+                        this._match(TOK_COMMA,state);
                     }
                     args.append(expression);
                 }
-                this._match(TOK_RPAREN, state);
+                this._match(TOK_RPAREN,state);
                 node = {type: 'Function', name: name, children: args};
                 return node;
             case TOK_FILTER:
-                var condition = this.expression(0, state);
-                this._match(TOK_RBRACKET, state);
-                if (this._lookahead(0, state) == TOK_FLATTEN) {
+                var condition = this.expression(0,state);
+                this._match(TOK_RBRACKET,state);
+                if (this._lookahead(0,state) == TOK_FLATTEN) {
                     right = {type: 'Identity'};
                 } else {
                     right = this._parseProjectionRHS(bindingPower.Filter, state);
@@ -287,38 +281,38 @@ component singleton accessors=true displayname="Parser" {
             case TOK_LTE:
                 return this._parseComparator(left, tokenName, state);
             case TOK_LBRACKET:
-                var token = this._lookaheadToken(0, state);
+                var token = this._lookaheadToken(0,state);
                 if (token.type == TOK_NUMBER || token.type == TOK_COLON) {
                     right = this._parseIndexExpression(state);
                     return this._projectIfSlice(left, right, state);
                 }
-                this._match(TOK_STAR, state);
-                this._match(TOK_RBRACKET, state);
+                this._match(TOK_STAR,state);
+                this._match(TOK_RBRACKET,state);
                 right = this._parseProjectionRHS(bindingPower.Star, state);
                 return {type: 'Projection', children: [left, right]};
             default:
-                this._errorToken(this._lookaheadToken(0, state), state);
+                this._errorToken(this._lookaheadToken(0,state), state);
         }
     }
-    function _match(tokenType, state) {
-        if (this._lookahead(0, state) == tokenType) {
+    function _match(tokenType,state) {
+        if (this._lookahead(0,state) == tokenType) {
             this._advance(state);
         } else {
-            var t = this._lookaheadToken(0, state);
-            // dump(t)
-            throw(type = 'JSONException', message = 'Expected ' & errorName[tokenType] & ', got: ' & errorName[t.type]);
+            var t = this._lookaheadToken(0,state);
+            //dump(t)
+            throw( type="JSONException", message='Expected ' & errorName[tokenType] & ', got: ' & errorName[t.type]);
         }
     }
     function _errorToken(token, state) {
-        throw(type = 'JSONException', message = 'Invalid token (' & errorName[token.type] & '): "' & token.value & '"');
+        throw( type="JSONException", message= 'Invalid token (' & errorName[token.type] & '): "' & token.value & '"' );
     }
     function _parseIndexExpression(state) {
-        if (this._lookahead(0, state) == TOK_COLON || this._lookahead(1, state) == TOK_COLON) {
+        if (this._lookahead(0,state) == TOK_COLON || this._lookahead(1,state) == TOK_COLON) {
             return this._parseSliceExpression(state);
         } else {
-            var node = {type: 'Index', value: this._lookaheadToken(0, state).value};
+            var node = {type: 'Index', value: this._lookaheadToken(0,state).value};
             this._advance(state);
-            this._match(TOK_RBRACKET, state);
+            this._match(TOK_RBRACKET,state);
             return node;
         }
     }
@@ -330,30 +324,26 @@ component singleton accessors=true displayname="Parser" {
             return indexExpr;
         }
     }
-
     function _parseSliceExpression(state) {
         // [start:end:step] where each part is optional, as well as the last
         // colon.
-        var parts = [nullValue(), nullValue(), nullValue()];
+        var parts = [nullvalue(), nullvalue(), nullvalue()];
         var index = 1;
-        var currentToken = this._lookahead(0, state);
+        var currentToken = this._lookahead(0,state);
         while (currentToken != TOK_RBRACKET && index <= 3) {
             if (currentToken == TOK_COLON) {
                 index++;
                 this._advance(state);
             } else if (currentToken == TOK_NUMBER) {
-                parts[index] = this._lookaheadToken(0, state).value;
+                parts[index] = this._lookaheadToken(0,state).value;
                 this._advance(state);
             } else {
-                var t = this._lookahead(0, state);
-                throw(
-                    type = 'JSONException',
-                    message = 'Parser Error: Syntax error, unexpected token: ' & t.value & '(' & errorName[t.type] & ')'
-                );
+                var t = this._lookahead(0,state);
+                throw( type="JSONException", message= 'Parser Error: Syntax error, unexpected token: ' &  t.value & '(' & errorName[t.type] & ')');
             }
-            currentToken = this._lookahead(0, state);
+            currentToken = this._lookahead(0,state);
         }
-        this._match(TOK_RBRACKET, state);
+        this._match(TOK_RBRACKET,state);
         return {type: 'Slice', children: parts};
     }
     function _parseComparator(left, comparator, state) {
@@ -361,51 +351,48 @@ component singleton accessors=true displayname="Parser" {
         return {type: 'Comparator', name: comparator, children: [left, right]};
     }
     function _parseDotRHS(rbp, state) {
-        var lookahead = this._lookahead(0, state);
+        var lookahead = this._lookahead(0,state);
         var exprTokens = [TOK_UNQUOTEDIDENTIFIER, TOK_QUOTEDIDENTIFIER, TOK_STAR];
         if (exprTokens.indexOf(lookahead) >= 0) {
             return this.expression(rbp, state);
         } else if (lookahead == TOK_LBRACKET) {
-            this._match(TOK_LBRACKET, state);
+            this._match(TOK_LBRACKET,state);
             return this._parseMultiselectList(state);
         } else if (lookahead == TOK_LBRACE) {
-            this._match(TOK_LBRACE, state);
+            this._match(TOK_LBRACE,state);
             return this._parseMultiselectHash(state);
         }
     }
     function _parseProjectionRHS(rbp, state) {
         var right = '';
-        if (bindingPower[this._lookahead(0, state)] < 10) {
+        if (bindingPower[this._lookahead(0,state)] < 10) {
             right = {type: 'Identity'};
-        } else if (this._lookahead(0, state) == TOK_LBRACKET) {
+        } else if (this._lookahead(0,state) == TOK_LBRACKET) {
             right = this.expression(rbp, state);
-        } else if (this._lookahead(0, state) == TOK_FILTER) {
+        } else if (this._lookahead(0,state) == TOK_FILTER) {
             right = this.expression(rbp, state);
-        } else if (this._lookahead(0, state) == TOK_DOT) {
-            this._match(TOK_DOT, state);
+        } else if (this._lookahead(0,state) == TOK_DOT) {
+            this._match(TOK_DOT,state);
             right = this._parseDotRHS(rbp, state);
         } else {
-            var t = this._lookaheadToken(0, state);
-            throw(
-                type = 'JSONException',
-                message = 'ParserError: Sytanx error, unexpected token: ' & t.value & '(' & errorName[t.type] & ')'
-            );
+            var t = this._lookaheadToken(0,state);
+            throw(type="JSONException", message= 'ParserError: Sytanx error, unexpected token: ' & t.value & '(' & errorName[t.type] & ')' );
         }
         return right;
     }
     function _parseMultiselectList(state) {
         var expressions = [];
-        while (this._lookahead(0, state) != TOK_RBRACKET) {
-            var expression = this.expression(0, state);
+        while (this._lookahead(0,state) != TOK_RBRACKET) {
+            var expression = this.expression(0,state);
             expressions.append(expression);
-            if (this._lookahead(0, state) == TOK_COMMA) {
-                this._match(TOK_COMMA, state);
-                if (this._lookahead(0, state) == TOK_RBRACKET) {
-                    throw(type = 'JSONException', message = 'Unexpected token: ]');
+            if (this._lookahead(0,state) == TOK_COMMA) {
+                this._match(TOK_COMMA,state);
+                if (this._lookahead(0,state) == TOK_RBRACKET) {
+                    throw(type="JSONException", message= 'Unexpected token: ]');
                 }
             }
         }
-        this._match(TOK_RBRACKET, state);
+        this._match(TOK_RBRACKET,state);
         return {type: 'MultiSelectList', children: expressions};
     }
     function _parseMultiselectHash(state) {
@@ -416,23 +403,20 @@ component singleton accessors=true displayname="Parser" {
         var value = '';
         var node = '';
         for (; ;) {
-            keyToken = this._lookaheadToken(0, state);
+            keyToken = this._lookaheadToken(0,state);
             if (identifierTypes.indexOf(keyToken.type) < 0) {
-                throw(
-                    type = 'JSONException',
-                    message = 'Expecting an identifier token like '' or ", got: ' & errorName[keyToken.type]
-                );
+                throw(type="JSONException", message= 'Expecting an identifier token like '' or ", got: ' & errorName[keyToken.type]);
             }
             keyName = keyToken.value;
             this._advance(state);
-            this._match(TOK_COLON, state);
-            value = this.expression(0, state);
+            this._match(TOK_COLON,state);
+            value = this.expression(0,state);
             node = {type: 'KeyValuePair', name: keyName, value: value};
             pairs.append(node);
-            if (this._lookahead(0, state) == TOK_COMMA) {
-                this._match(TOK_COMMA, state);
-            } else if (this._lookahead(0, state) == TOK_RBRACE) {
-                this._match(TOK_RBRACE, state);
+            if (this._lookahead(0,state) == TOK_COMMA) {
+                this._match(TOK_COMMA,state);
+            } else if (this._lookahead(0,state) == TOK_RBRACE) {
+                this._match(TOK_RBRACE,state);
                 break;
             }
         }
