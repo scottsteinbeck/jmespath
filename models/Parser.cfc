@@ -97,6 +97,9 @@ component singleton accessors=true displayname="Parser" {
 		return this;
 	}   
 
+    function nullValue() {
+        return javacast('null', '');
+    }
     function parse(expression) {
         var state = {
             tokens: _loadTokens(expression),
@@ -143,9 +146,9 @@ component singleton accessors=true displayname="Parser" {
     }
 
     function nud(token, state) {
-        var left;
-        var right;
-        var expression;
+        var left = '';
+        var right = '';
+        var expression = '';
         switch (token.type) {
             case TOK_LITERAL:
                 return {type: 'Literal', value: token.value};
@@ -216,7 +219,7 @@ component singleton accessors=true displayname="Parser" {
         }
     }
     function led(tokenName, left, state) {
-        var right;
+        var right = '';
         switch (tokenName) {
             case TOK_DOT:
                 var rbp = bindingPower.Dot;
@@ -240,8 +243,8 @@ component singleton accessors=true displayname="Parser" {
             case TOK_LPAREN:
                 var name = left.name;
                 var args = [];
-                var expression;
-                var node;
+                var expression = '';
+                var node = '';
                 while (this._lookahead(0,state) != TOK_RPAREN) {
                     if (this._lookahead(0,state) == TOK_CURRENT) {
                         expression = {type: TOK_CURRENT};
@@ -361,7 +364,7 @@ component singleton accessors=true displayname="Parser" {
         }
     }
     function _parseProjectionRHS(rbp, state) {
-        var right;
+        var right = '';
         if (bindingPower[this._lookahead(0,state)] < 10) {
             right = {type: 'Identity'};
         } else if (this._lookahead(0,state) == TOK_LBRACKET) {
@@ -395,10 +398,10 @@ component singleton accessors=true displayname="Parser" {
     function _parseMultiselectHash(state) {
         var pairs = [];
         var identifierTypes = [TOK_UNQUOTEDIDENTIFIER, TOK_QUOTEDIDENTIFIER];
-        var keyToken;
-        var keyName;
-        var value;
-        var node;
+        var keyToken = '';
+        var keyName = '';
+        var value = '';
+        var node = '';
         for (; ;) {
             keyToken = this._lookaheadToken(0,state);
             if (identifierTypes.indexOf(keyToken.type) < 0) {

@@ -35,6 +35,9 @@ component singleton accessors=true displayname="TreeInterpreter" {
         if (!isNull(runtime)) variables.jmesPathRuntime = runtime;
     }
 
+    function nullValue() {
+        return javacast('null', '');
+    }
     function strictDeepEqual(first, second) {
         if(isNull(first) && isNull(second)) return true;
         if(isNull(first) || isNull(second)) return false;
@@ -146,16 +149,16 @@ component singleton accessors=true displayname="TreeInterpreter" {
     }
     function visit(node, value) {
         // echo(serializeJSON(node) & "[ " & node.type & " ] " & serializeJSON(value) & "<br/>");
-        var  matched;
-        var  current;
-        var  result;
-        var  first;
-        var  second;
-        var  field;
-        var  left;
-        var  right;
-        var  collected;
-        var  i;
+        var  matched = '';
+        var  current = '';
+        var  result = '';
+        var  first = '';
+        var  second = '';
+        var  field = '';
+        var  left = '';
+        var  right = '';
+        var  collected = '';
+        var  i = '';
         switch (node.type) {
             case 'Field':
                 if (!isNull(value) && isStruct(value)) {
@@ -193,7 +196,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 } else {
                     index++; // to account for coldfusion starting at 1
                 }
-                if (!value.indexExists(index)) {
+                if (!value.isDefined(index)) {
                     return;
                 }
                 result = value[index];
@@ -302,7 +305,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                 for (i = 1; i <= original.len(); i++) {
                     current = original[i];
                     if (isArray(current)) {
-                        merged = merged.merge(current);
+                        merged = merged.append(current, true);
                     } else {
                         merged.append(current);
                     }
@@ -324,7 +327,7 @@ component singleton accessors=true displayname="TreeInterpreter" {
                     return;
                 }
                 collected = {};
-                var child;
+                var child = '';
                 for (i = 1; i <= node.children.len(); i++) {
                     child = node.children[i];
                     collected[child.name] = this.visit(child.value, value);

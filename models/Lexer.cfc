@@ -53,7 +53,9 @@ component accessors=true singleton displayname="Lexer" {
         '!': true
     };
     skipChars = {' ': true, '#chr(13)#': true, '#chr(10)#': true};
-
+    function nullValue() {
+        return javacast('null', '');
+    }
     function isAlpha(ch) {
         return (ch >= 'a' && ch <= 'z') ||
         (ch >= 'A' && ch <= 'Z') ||
@@ -93,21 +95,15 @@ component accessors=true singleton displayname="Lexer" {
         var state = {
             _current: 1
         }
-        var start;
-        var identifier;
-        var token;
+        var start = '';
+        var identifier = '';
+        var token = '';
 		var maxLength = stream.len();
         while (state._current <= maxLength) {
             if ( isAlpha( lookupValue(state,stream))) {
                 start = state._current;
                 identifier = _consumeUnquotedIdentifier(stream,state);
                 tokens.append({type: TOK_UNQUOTEDIDENTIFIER, value: identifier, start: start});
-            } else if (!isNull(basicTokens[ lookupValue(state,stream)])) {
-                tokens.append({type: basicTokens[ lookupValue(state,stream)], value:  lookupValue(state,stream), start: state._current});
-                advance(state,stream);
-            } else if ( isNum( lookupValue(state,stream))) {
-                token = _consumeNumber(stream,state);
-                tokens.append(token);
             } else if ( lookupValue(state,stream)== '[') {
                 // No need to increment state._current.  This happens
                 // in _consumeLBracket
@@ -125,11 +121,14 @@ component accessors=true singleton displayname="Lexer" {
                 start = state._current;
                 literal = _consumeLiteral(stream,state);
                 tokens.append({type: TOK_LITERAL, value: literal, start: start});
-            } else if (operatorStartToken.keyExists( lookupValue(state,stream) )) {
-                tokens.append(_consumeOperator(stream,state));
             } else if (skipChars.keyExists( lookupValue(state,stream) )) {
                 // Ignore whitespace.
 				advance(state,stream);
+            } else if (isNum(lookupValue(state, stream))) {
+                token = _consumeNumber(stream, state);
+                tokens.append(token);
+            } else if (operatorStartToken.keyExists(lookupValue(state, stream))) {
+                tokens.append(_consumeOperator(stream, state));
             } else if ( lookupValue(state,stream) == '&') {
                 start = state._current;
 				advance(state,stream);
@@ -148,6 +147,13 @@ component accessors=true singleton displayname="Lexer" {
                 } else {
                     tokens.append({type: TOK_PIPE, value: '|', start: start});
                 }
+            } else if (!isNull(basicTokens[lookupValue(state, stream)])) {
+                tokens.append({
+                    type: basicTokens[lookupValue(state, stream)],
+                    value: lookupValue(state, stream),
+                    start: state._current
+                });
+                advance(state, stream);
             } else {
                 throw( type="JMESError", message= 'Unknown character:(' & asc( lookupValue(state,stream)) & ')');
             }
@@ -229,7 +235,7 @@ component accessors=true singleton displayname="Lexer" {
         while (state._current < maxLength && isNum( lookupValue(state,stream)) ) {
             advance(state,stream);
         }
-        var value = parseNumber(slice(stream, start, state._current));
+        var value = slice(stream, start, state._current).replaceAll('[^0-9\-]', '');
         return {type: TOK_NUMBER, value: value, start: start};
     }
 
@@ -285,7 +291,7 @@ component accessors=true singleton displayname="Lexer" {
         advance(state,stream);
         var start = state._current;
         var maxLength = stream.len();
-        var literal;
+        var literal = '';
         while (lookupValue(state,stream)!= '`') {
             // You can escape a literal char or you can escape the escape.
             current = state._current;

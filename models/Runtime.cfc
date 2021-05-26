@@ -98,8 +98,9 @@ component singleton accessors=true displayname="runtime" {
         };
     }
 
-
-
+    function nullValue() {
+        return javacast('null', '');
+    }
 
     function callFunction(name, resolvedArgs) {
         if (!this.functionTable.keyExists(name)) {
@@ -116,7 +117,7 @@ component singleton accessors=true displayname="runtime" {
         // If the last argument is declared as variadic, then we need
         // a minimum number of args to be required.  Otherwise it has to
         // be an exact amount.
-        var pluralized;
+        var pluralized = '';
         if (signature[signature.len()].keyExists('variadic') && signature[signature.len()].variadic) {
             if (args.len() < signature.len()) {
                 pluralized = signature.len() == 1 ? ' argument' : ' arguments';
@@ -134,9 +135,9 @@ component singleton accessors=true displayname="runtime" {
                 ' but received ' &  args.len()
             );
         }
-        var currentSpec;
-        var actualType;
-        var typeMatched;
+        var currentSpec = '';
+        var actualType = '';
+        var typeMatched = '';
         for (var i = 1; i <= signature.len(); i++) {
             var typeMatched = false;
             var currentSpec = signature[i].types;
@@ -185,7 +186,7 @@ component singleton accessors=true displayname="runtime" {
             } else if (actual == TYPE_ARRAY) {
                 // Otherwise we need to check subtypes.
                 // I think this has potential to be improved.
-                var subtype;
+                var subtype = '';
                 if (expected == TYPE_ARRAY_NUMBER) {
                     subtype = TYPE_NUMBER;
                 } else if (expected == TYPE_ARRAY_STRING) {
@@ -210,9 +211,20 @@ component singleton accessors=true displayname="runtime" {
         if(isNull(obj)) return TYPE_NULL;
         if(getMetaData(obj).getName() == 'java.lang.String') return TYPE_STRING;
         if(getMetaData(obj).getName() == 'java.lang.Boolean') return TYPE_BOOLEAN;
-        if(getMetaData(obj).getName() == 'java.lang.Double') return TYPE_NUMBER;
-        if(getMetaData(obj).getName() == 'lucee.runtime.type.ArrayImpl') return TYPE_ARRAY;
-        if(getMetaData(obj).getName() == 'lucee.runtime.type.StructImpl'){
+        if (
+            getMetadata(obj).getName() == 'java.lang.Double' ||
+            getMetadata(obj).getName() == 'java.lang.Integer'
+        )
+            return TYPE_NUMBER;
+        if (
+            getMetadata(obj).getName() == 'lucee.runtime.type.ArrayImpl' ||
+            getMetadata(obj).getName() == 'coldfusion.runtime.Array'
+        )
+            return TYPE_ARRAY;
+        if (
+            getMetadata(obj).getName() == 'lucee.runtime.type.StructImpl' ||
+            getMetadata(obj).getName() == 'coldfusion.runtime.Struct'
+        ) {
             if (structKeyExists(obj,'jmespathType') && obj.jmespathType == TOK_EXPREF) {
                 return TYPE_EXPREF;
             } else {
@@ -374,6 +386,9 @@ component singleton accessors=true displayname="runtime" {
         return items;
     }
     function _functionContains(resolvedArgs) {
+        if (getMetadata(resolvedargs).getName() == 'coldfusion.runtime.Array') {
+            return resolvedArgs[1].find(resolvedArgs[2].replaceAll('^''|''$', '')) > 0 ? 'true' : 'false';
+        }
         return resolvedArgs[1].find(resolvedArgs[2]) > 0;
     }
     function _functionMatches(resolvedArgs) {
@@ -511,7 +526,7 @@ component singleton accessors=true displayname="runtime" {
     }
     function _functionToNumber(resolvedArgs) {
         var typeName = _getTypeName(resolvedArgs[1]);
-        var convertedValue;
+        var convertedValue = '';
         if (typeName == TYPE_NUMBER) {
             return resolvedArgs[1];
         } else if (typeName == TYPE_STRING) {
@@ -547,8 +562,9 @@ component singleton accessors=true displayname="runtime" {
         }
         var exprefNode = resolvedArgs[2];
         var requiredType = _getTypeName(jmesPathTreeInterpreter.visit(exprefNode, sortedArray[1]));
-        if ([TYPE_NUMBER, TYPE_STRING].indexOf(requiredType) < 0) {
-            throw (type="JSONException", message= 'TypeError');
+        var _ii = [TYPE_NUMBER, TYPE_STRING];
+        if (_ii.indexOf(requiredType) < 0) {
+            throw(type = 'JSONException', message = 'TypeError');
         }
         var that = this;
         // In order to get a stable sort out of an unstable
@@ -594,15 +610,15 @@ component singleton accessors=true displayname="runtime" {
         for (var j = 1; j <= decorated.len(); j++) {
             sortedArray[j] = decorated[j][2];
         }
-        return sortedArray;
+        return sortedArray = '';
     }
     function _functionMaxBy(resolvedArgs) {
         var exprefNode = resolvedArgs[2];
         var resolvedArray = resolvedArgs[1];
         var keyFunction = createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
-        var maxNumber = Javacast('double',1).NEGATIVE_INFINITY;
-        var maxRecord;
-        var current;
+        var maxNumber = createObject('java', 'java.lang.Double').NEGATIVE_INFINITY;
+        var maxRecord = '';
+        var current = '';
         for (var i = 1; i <= resolvedArray.len(); i++) {
             current = keyFunction(resolvedArray[i]);
 			if(isDate(current)) current = parsedatetime(current)+0;
@@ -618,8 +634,8 @@ component singleton accessors=true displayname="runtime" {
         var resolvedArray = resolvedArgs[1];
         var keyFunction = createKeyFunction(exprefNode, [TYPE_NUMBER, TYPE_STRING]);
         var minNumber = Javacast('double',1).POSITIVE_INFINITY;
-        var minRecord;
-        var current;
+        var minRecord = '';
+        var current = '';
         for (var i = 1; i <= resolvedArray.len(); i++) {
             current = keyFunction(resolvedArray[i]);
 			if(isDate(current)) current = parsedatetime(current)+0;
